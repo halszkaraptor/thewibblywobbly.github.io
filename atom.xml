@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
-  <link href="http://thewibblywobbly.github.io/atom.xml" rel="self"/>
-  <link href="http://thewibblywobbly.github.io/"/>
-  <updated>2014-12-29T13:52:41-05:00</updated>
-  <id>http://thewibblywobbly.github.io/</id>
+  <title><![CDATA[To Boldly Code...]]></title>
+  <link href="http://boldlycoding.com/atom.xml" rel="self"/>
+  <link href="http://boldlycoding.com/"/>
+  <updated>2014-12-29T14:19:58-05:00</updated>
+  <id>http://boldlycoding.com/</id>
   <author>
-    <name><![CDATA[Your Name]]></name>
+    <name><![CDATA[George McDaid]]></name>
     
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Installing Cloudera Manager]]></title>
-    <link href="http://thewibblywobbly.github.io/blog/2014/12/29/installing-cloudera-manager/"/>
+    <link href="http://boldlycoding.com/blog/2014/12/29/installing-cloudera-manager/"/>
     <updated>2014-12-29T08:47:50-05:00</updated>
-    <id>http://thewibblywobbly.github.io/blog/2014/12/29/installing-cloudera-manager</id>
+    <id>http://boldlycoding.com/blog/2014/12/29/installing-cloudera-manager</id>
     <content type="html"><![CDATA[<!-- more -->
 
 
@@ -43,10 +43,12 @@
 </code></pre></li>
 <li><p>If the installation was started correctly, it should display what is shown in the screenshot below. Select <em>Next</em> to continue.</p>
 
-<p> <img class="center" src="http://thewibblywobbly.github.io/images/cm/3_start.PNG" width="550" height="750" title="Select next" ></p></li>
+<p> <img class="center" src="http://boldlycoding.com/images/cm/3_start.PNG" width="550" height="750" title="Select next" ></p></li>
 <li><p>Accept the Cloudera license</p></li>
 <li><p>Accept the Oracle binary license. The installer will process to install the Cloudera repository, gather files, and install the JDK followed by Cloudera Manager Server. Have patience as the installation can take some time.</p></li>
-<li></li>
+<li><p>When the installer finishes, it will indicate to open a web browser and navigate to the following url: <a href="http://localhost:7180/">http://localhost:7180/</a> The default username is <strong>admin</strong> and the password is <strong>admin</strong>. Open a web browser and use a url that will connect to the appropriate node in the cluster. After logging in, the installation will continue.</p>
+
+<p> <img class="center" src="http://boldlycoding.com/images/cm/6_browser.PNG" width="550" height="750" title="Open a web browser" ></p></li>
 </ol>
 
 ]]></content>
@@ -54,9 +56,9 @@
   
   <entry>
     <title type="html"><![CDATA[Installing, Configuring and Testing Bacula]]></title>
-    <link href="http://thewibblywobbly.github.io/blog/2014/12/26/installing-bacula/"/>
+    <link href="http://boldlycoding.com/blog/2014/12/26/installing-bacula/"/>
     <updated>2014-12-26T04:07:10-05:00</updated>
-    <id>http://thewibblywobbly.github.io/blog/2014/12/26/installing-bacula</id>
+    <id>http://boldlycoding.com/blog/2014/12/26/installing-bacula</id>
     <content type="html"><![CDATA[<!-- more -->
 
 
@@ -232,9 +234,9 @@
   
   <entry>
     <title type="html"><![CDATA[Installing phpMyAdmin]]></title>
-    <link href="http://thewibblywobbly.github.io/blog/2014/12/24/installing-phpmyadmin/"/>
+    <link href="http://boldlycoding.com/blog/2014/12/24/installing-phpmyadmin/"/>
     <updated>2014-12-24T13:30:41-05:00</updated>
-    <id>http://thewibblywobbly.github.io/blog/2014/12/24/installing-phpmyadmin</id>
+    <id>http://boldlycoding.com/blog/2014/12/24/installing-phpmyadmin</id>
     <content type="html"><![CDATA[<!-- more -->
 
 
@@ -273,9 +275,9 @@
   
   <entry>
     <title type="html"><![CDATA[Cluster Machine Setup and Prep]]></title>
-    <link href="http://thewibblywobbly.github.io/blog/2014/12/21/cluster-machine-setup-and-prep/"/>
+    <link href="http://boldlycoding.com/blog/2014/12/21/cluster-machine-setup-and-prep/"/>
     <updated>2014-12-21T07:31:53-05:00</updated>
-    <id>http://thewibblywobbly.github.io/blog/2014/12/21/cluster-machine-setup-and-prep</id>
+    <id>http://boldlycoding.com/blog/2014/12/21/cluster-machine-setup-and-prep</id>
     <content type="html"><![CDATA[<!-- more -->
 
 
@@ -288,38 +290,38 @@
 <li><p>Start the OS installation and configure appropriate regional settings including language and keyboard layout.</p></li>
 <li><p>The installation will ask for a hostname. All machines in the cluster should have a unique hostname. In my cluster I configured the machines as typhlosion, quilava and cyndaquil where typhlosion is the master of the cluster and the other two machines are slaves.</p>
 
-<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/3_hostname.png" width="550" height="750" title="Set up each host with an appropiate hostname" ></p></li>
+<p> <img class="center" src="http://boldlycoding.com/images/os/3_hostname.png" width="550" height="750" title="Set up each host with an appropiate hostname" ></p></li>
 <li><p>The Ubuntu installation will then prompt for a username.</p>
 
-<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/4_username.png" width="550" height="750" title="Enter an appropriate username" ></p></li>
+<p> <img class="center" src="http://boldlycoding.com/images/os/4_username.png" width="550" height="750" title="Enter an appropriate username" ></p></li>
 <li><p>Enter and verify a memorable password.</p>
 
-<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/5_password.PNG" width="550" height="750" title="Enter an appropriate password" ></p></li>
+<p> <img class="center" src="http://boldlycoding.com/images/os/5_password.PNG" width="550" height="750" title="Enter an appropriate password" ></p></li>
 <li><p>For my project, I chose not to encrypt my home directory.</p>
 
-<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/6_encrypt.PNG" width="550" height="750" title="Encrypt your directory?" ></p></li>
+<p> <img class="center" src="http://boldlycoding.com/images/os/6_encrypt.PNG" width="550" height="750" title="Encrypt your directory?" ></p></li>
 <li><p>An appropiate time zone should then be selected. I have seen references to problem occurring with CDH/Cloudera Manager when configuration options related to time are not set correctly, so ensure the correct time zone is selected on all machines in the cluster.</p>
 
-<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/7_timezone.PNG" width="550" height="750" title="Set and appropiate time zone" ></p></li>
+<p> <img class="center" src="http://boldlycoding.com/images/os/7_timezone.PNG" width="550" height="750" title="Set and appropiate time zone" ></p></li>
 <li><p>On the cluster machines, I elected to use the entire disk without LVM for simplicity&rsquo;s sake. Following this step you will need to confirm the disk to partition.</p>
 
-<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/8_lvm.PNG" width="550" height="750" title="Use LVM?" ></p></li>
+<p> <img class="center" src="http://boldlycoding.com/images/os/8_lvm.PNG" width="550" height="750" title="Use LVM?" ></p></li>
 <li><p>Finally, the installation will confirm and then write all changes to disk. Assuming everything on your screen is correct, select yes and wait for the files to be written.</p>
 
-<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/9_write.PNG" width="550" height="750" title="Write changes to disk" ></p></li>
+<p> <img class="center" src="http://boldlycoding.com/images/os/9_write.PNG" width="550" height="750" title="Write changes to disk" ></p></li>
 <li><p>Following a lengthy file write, the installation will ask about an HTTP proxy. This was not required for my set up and thus I left the field blank. The installation will then continue writing files.</p></li>
 <li><p>The installation now asks about Automatic Updating. Like many tech envoinments where change is not tolerated, Cloudera Manager and Hadoop are no different. Hadoop particularly does not deal well with changes in its environment. Keeping this in mind I selected no automatic updating to use my own discretion, and the installation continued.</p>
 
-<p><img class="center" src="http://thewibblywobbly.github.io/images/os/11_updates.PNG" width="550" height="750" title="No updates!" ></p></li>
+<p><img class="center" src="http://boldlycoding.com/images/os/11_updates.PNG" width="550" height="750" title="No updates!" ></p></li>
 <li><p>Next, software needs to be selected for installation. The spacebar is used for selection and enter confirms selections. The selections will differ based on the type of cluster node. The OpenSSH server <strong>must</strong> be installed on <strong>all</strong> nodes in the cluster. Cloudera Manager and Hadoop use SSH. The LAMP server package should be installed on the master of the cluster (typhlosion in my case) if, like myself, MySQL is more appealing than a PostgreSQL database. Cloudera Manager can store all of its data in a MySQL database and the backup agent Bacula (to be described later) requires a MySQL installation. The slaves of the cluster do not require LAMP to be installed but if more then one of the components are needed, it is not a bad idea to install those now. For my cluster, I only need MySQL on the slaves, so I install that separately to reduce the number of extraneous services. Of course, if any of the other listed components are needed, they should be selected for installation now.</p>
 
-<p><img class="center" src="http://thewibblywobbly.github.io/images/os/12_software.PNG" width="550" height="750" title="Software selection" ></p></li>
+<p><img class="center" src="http://boldlycoding.com/images/os/12_software.PNG" width="550" height="750" title="Software selection" ></p></li>
 <li><p>If installing MySQL, the installation will display a prompt for a root user password. In this test cluster, I use the same password for all services to simplify the setup process. After entering the password, the installer will request confirmation and then continue writing files.</p>
 
-<p><img class="center" src="http://thewibblywobbly.github.io/images/os/13_mysqlpassword.PNG" width="550" height="750" title="Enter a MySQL password" ></p></li>
+<p><img class="center" src="http://boldlycoding.com/images/os/13_mysqlpassword.PNG" width="550" height="750" title="Enter a MySQL password" ></p></li>
 <li><p>Finally, assuming no other OS is detected, select Yes and GRUB will be installed directly to the MBR. I do not recommend running multiple operating systems in a server environment. After GRUB is written the installation will complete and the machine will reboot after Continue is selected.</p>
 
-<p><img class="center" src="http://thewibblywobbly.github.io/images/os/14_grub.PNG" width="550" height="750" title="Install GRUB" ></p></li>
+<p><img class="center" src="http://boldlycoding.com/images/os/14_grub.PNG" width="550" height="750" title="Install GRUB" ></p></li>
 </ol>
 
 
