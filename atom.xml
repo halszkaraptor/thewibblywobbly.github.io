@@ -4,7 +4,7 @@
   <title><![CDATA[To Boldly Code...]]></title>
   <link href="http://boldlycoding.com/atom.xml" rel="self"/>
   <link href="http://boldlycoding.com/"/>
-  <updated>2014-12-29T14:26:27-05:00</updated>
+  <updated>2014-12-29T14:36:11-05:00</updated>
   <id>http://boldlycoding.com/</id>
   <author>
     <name><![CDATA[George McDaid]]></name>
@@ -45,7 +45,7 @@
 
 <p> <img class="center" src="http://boldlycoding.com/images/cm/3_start.PNG" width="550" height="750" title="Select next" ></p></li>
 <li><p>Accept the Cloudera license</p></li>
-<li><p>Accept the Oracle binary license. The installer will process to install the Cloudera repository, gather files, and install the JDK followed by Cloudera Manager Server. Have patience as the installation can take some time.</p></li>
+<li><p>Accept the Oracle binary license. The installer will proceed to install the Cloudera repository, gather files, and install the JDK followed by Cloudera Manager Server. Have patience as the installation can take some time.</p></li>
 <li><p>When the installer finishes, it will indicate to open a web browser and navigate to the following url: <a href="http://localhost:7180/">http://localhost:7180/</a> The default username is <strong>admin</strong> and the password is <strong>admin</strong>. Open a web browser and use a url that will connect to the appropriate node in the cluster. After logging in, the installation will continue.</p>
 
 <p> <img class="center" src="http://boldlycoding.com/images/cm/6_browser.PNG" width="550" height="750" title="Open a web browser" ></p></li>
