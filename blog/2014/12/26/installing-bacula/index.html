@@ -1,0 +1,364 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Installing, Configuring and Testing Bacula - My Octopress Blog</title>
+  <meta name="author" content="Your Name">
+
+  
+  <meta name="description" content="Installation Cloudera Manager and Hadoop installations can be unstable so having backups of the file system becomes very important. Bacula create &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://thewibblywobbly.github.io/blog/2014/12/26/installing-bacula">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="My Octopress Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">My Octopress Blog</a></h1>
+  
+    <h2>A blogging framework for hackers.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="thewibblywobbly.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Installing, Configuring and Testing Bacula</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-12-26T04:07:10-05:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>4:07 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><!-- more -->
+
+
+<h2>Installation</h2>
+
+<p>Cloudera Manager and Hadoop installations can be unstable so having backups of the file system becomes very important. Bacula create full, incremental, and differential backups of the filesystem. It support configuration of the backed up directory and exclusions to each backup. Bacula also allows restoration of previously created backups. To create these backups, restore files properly, and maintain other internal information, Bacula requires MySQL to be installed.</p>
+
+<ol>
+<li><p>To begin the install, issue the command:</p>
+
+<pre><code class="`"> sudo apt-get install bacula-server bacula-client
+</code></pre>
+
+<p> To simply the install process, select Yes when asked if dbconfig-common should be used. This requires entering the database administrator password.</p></li>
+<li><p>Create the directories to store Bacula&rsquo;s backup and restoration files</p>
+
+<pre><code class="`"> sudo mkdir -p /bacula/backup /bacula/restore
+</code></pre>
+
+<p> Also, change permission so Bacula create correctly read and write.</p>
+
+<pre><code class="`"> sudo chown -R bacula:bacula /bacula
+ sudo chmod -R 700 /bacula
+</code></pre></li>
+<li><p>Now, Bacula must be configured to backup and restore to appropriate locations. To begin, the <em>bacula-dir.conf</em> file must be edited (The next three steps edit this file as well).</p>
+
+<pre><code class="`"> sudo nano /etc/bacula/bacula-dir.conf
+</code></pre>
+
+<p> Within the <em>Job</em> under the comment block beginning <em>Standard Restore Template</em>, change the Where setting. To restore files in their original location it should be set to /. To restore them to the previously created directory, set it to <em>/bacula/restore</em>.</p>
+
+<p> I configured my install to restore to the original locations</p>
+
+<pre><code class="`"> Job {
+   Name = "RestoreFiles"
+   Type = Restore
+   Client=Blank-fd
+   FileSet="Full Set"
+   Storage = File
+   Pool = Default
+   Messages = Standard
+   Where = /
+ }
+</code></pre></li>
+<li><p>To conserve disk space, I configured Bacula to use GZIP compression. This is found in the options section of the FileSet listed under the comment <em>List of files to be backed up</em></p>
+
+<pre><code class="`"> Include {
+     Options {
+         signature = MD5
+         compression = GZIP
+     }
+ }
+</code></pre></li>
+<li><p>Then set file to / to back up the entire file system. This option is found after the compression option under the next comment block.</p>
+
+<pre><code class="`"> File = /
+</code></pre></li>
+<li><p>Now, configure Bacula to exclude its own file path. This is found in the exclude section, which should be just beyond the file option.</p>
+
+<pre><code class="`"> Exclude {
+     File = /var/lib/bacula
+     File = /bacula
+     File = /proc
+     File = /tmp
+     File = /.journal
+     File = /.fsck
+ }
+</code></pre></li>
+<li><p>Next, Bacula must be configured to back up the files described in the Job to the appropriate location. Backup locations are defined in <em>/etc/bacula/bacula-sd.conf</em></p>
+
+<pre><code class="`"> sudo nano /etc/bacula/bacula-sd.conf
+</code></pre>
+
+<p> Under to comment block beginning <em>Devices supported by this Storage daemon</em>, change the Device group to</p>
+
+<pre><code class="`"> Device {
+   Name = FileStorage
+   Media Type = File
+   Archive Device = /bacula/backup
+   LabelMedia = yes;                   # lets Bacula label unlabeled media
+   Random Access = Yes;
+   AutomaticMount = yes;               # when device opened, read it
+   RemovableMedia = no;
+   AlwaysOpen = no;
+ }
+</code></pre>
+
+<p> This sets the backup location to the directory created in a previous step.</p></li>
+<li><p>To validate the edited configuration, two command should be issued. If no errors are found, the command will return nothing.</p>
+
+<pre><code class="`"> sudo bacula-dir -tc /etc/bacula/bacula-dir.conf
+ sudo bacula-sd -tc /etc/bacula/bacula-sd.conf
+</code></pre></li>
+<li><p>Now, the Bacula services must be restarted to use the new configuration.</p>
+
+<pre><code class="`"> sudo service bacula-sd restart
+ sudo service bacula-director restart
+</code></pre></li>
+</ol>
+
+
+<h2>Testing Bacula</h2>
+
+<ol>
+<li><p>Bacula backups and restores are started from Bacula&rsquo;s console, it can be started with</p>
+
+<pre><code class="`"> sudo bconsole
+</code></pre></li>
+<li><p>To label the archive file created by the backup job that will be started in a later step use the command</p>
+
+<pre><code class="`"> label
+</code></pre>
+
+<p> It will prompt for a name, something like Initial_Backup can be entered.</p></li>
+<li><p>Next, the type of storage &ldquo;pool&rdquo;, to store the backup as a <em>File</em>, or archive select option 2 when prompted.</p></li>
+<li><p>To begin the backup operation</p>
+
+<pre><code class="`"> run
+</code></pre>
+
+<p> Select option 1, <em>BackupClient1</em>, to select the Job configured in the previous steps. This selects a full backup operation since this is the first backup made. If this job is done in the future, an incremental backup will be done. This can be reconfigured in the Job settings.</p></li>
+<li><p>To confirm the selections and start the backup type</p>
+
+<pre><code class="`"> yes
+</code></pre>
+
+<p> To view output generated by the job use the command</p>
+
+<pre><code class="`"> messages
+</code></pre>
+
+<p> When the backup has finished, <em>Backup: OK</em> will be displayed. To exit the console type</p>
+
+<pre><code class="`"> exit
+</code></pre></li>
+</ol>
+
+
+<h2>Restoring Files</h2>
+
+<p>When restoring files from a Bacula backup, a full backup must be restored before any incremental backups.</p>
+
+<p>To list all the backup jobs that have been executed use from the Bacula console</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>list jobs</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li><p>To restore all the files automatically type</p>
+
+<pre><code class="`"> restore all
+</code></pre></li>
+<li><p>Then use option 5 to select the most recent backup. All files will be preselected from the most recent backup for restoration since <em>all</em> was used. If all is not specified, files can be selected from the tree for restoration.</p></li>
+<li><p>To finish file selection type</p>
+
+<pre><code class="`"> done
+</code></pre></li>
+<li><p>Like during the backup procedure the following can be typed to view generated output</p>
+
+<pre><code class="`"> messages
+</code></pre></li>
+<li><p>When restoration has been completed type</p>
+
+<pre><code class="`"> exit
+</code></pre></li>
+</ol>
+
+
+<p>This covers a very basic restoration process. Documentation for the restore command exists here, for more advanced needs.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Your Name</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-12-26T04:07:10-05:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>4:07 am</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://thewibblywobbly.github.io/blog/2014/12/26/installing-bacula/" data-via="" data-counturl="http://thewibblywobbly.github.io/blog/2014/12/26/installing-bacula/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/12/24/installing-phpmyadmin/" title="Previous Post: Installing phpMyAdmin">&laquo; Installing phpMyAdmin</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/12/29/installing-cloudera-manager/" title="Next Post: Installing Cloudera Manager">Installing Cloudera Manager &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/12/29/installing-cloudera-manager/">Installing Cloudera Manager</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/26/installing-bacula/">Installing, Configuring and Testing Bacula</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/24/installing-phpmyadmin/">Installing phpMyAdmin</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/21/cluster-machine-setup-and-prep/">Cluster Machine Setup and Prep</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Your Name -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

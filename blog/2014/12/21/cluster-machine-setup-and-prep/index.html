@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Cluster Machine Setup and Prep - My Octopress Blog</title>
+  <meta name="author" content="Your Name">
+
+  
+  <meta name="description" content="Installing the OS All machines in the cluster will use Cloudera Manager, mentioned in a previous post. Cloudera Manager requires that all machines &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://thewibblywobbly.github.io/blog/2014/12/21/cluster-machine-setup-and-prep">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="My Octopress Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">My Octopress Blog</a></h1>
+  
+    <h2>A blogging framework for hackers.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="thewibblywobbly.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Cluster Machine Setup and Prep</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-12-21T07:31:53-05:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2014</span></span> <span class='time'>7:31 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><!-- more -->
+
+
+<h2>Installing the OS</h2>
+
+<p>All machines in the cluster will use Cloudera Manager, mentioned in a previous post. Cloudera Manager <a href="http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_ig_cm_requirements.html" title="Cloudera Manager Requirements">requires</a> that all machines running the manager, and being managed, have a supported 64-bit OS installed. The following process should be followed on all nodes in the cluster</p>
+
+<ol>
+<li><p>Through experience I have found that CDH, a component of Cloudera Manager, runs smootly on Ubuntu 12.04 (Precise). Precise can be downloaded <a href="http://releases.ubuntu.com/12.04/" title="Ubuntu 12.04 Download">here</a>. For this project, a server installation was appropriate. There are many web interfaces and no substantial need for a desktop interface.</p></li>
+<li><p>Start the OS installation and configure appropriate regional settings including language and keyboard layout.</p></li>
+<li><p>The installation will ask for a hostname. All machines in the cluster should have a unique hostname. In my cluster I configured the machines as typhlosion, quilava and cyndaquil where typhlosion is the master of the cluster and the other two machines are slaves.</p>
+
+<p> <img class="center" src="/images/os/3_hostname.png" width="550" height="750" title="Set up each host with an appropiate hostname" ></p></li>
+<li><p>The Ubuntu installation will then prompt for a username.</p>
+
+<p> <img class="center" src="/images/os/4_username.png" width="550" height="750" title="Enter an appropriate username" ></p></li>
+<li><p>Enter and verify a memorable password.</p>
+
+<p> <img class="center" src="/images/os/5_password.PNG" width="550" height="750" title="Enter an appropriate password" ></p></li>
+<li><p>For my project, I chose not to encrypt my home directory.</p>
+
+<p> <img class="center" src="/images/os/6_encrypt.PNG" width="550" height="750" title="Encrypt your directory?" ></p></li>
+<li><p>An appropiate time zone should then be selected. I have seen references to problem occurring with CDH/Cloudera Manager when configuration options related to time are not set correctly, so ensure the correct time zone is selected on all machines in the cluster.</p>
+
+<p> <img class="center" src="/images/os/7_timezone.PNG" width="550" height="750" title="Set and appropiate time zone" ></p></li>
+<li><p>On the cluster machines, I elected to use the entire disk without LVM for simplicity&rsquo;s sake. Following this step you will need to confirm the disk to partition.</p>
+
+<p> <img class="center" src="/images/os/8_lvm.PNG" width="550" height="750" title="Use LVM?" ></p></li>
+<li><p>Finally, the installation will confirm and then write all changes to disk. Assuming everything on your screen is correct, select yes and wait for the files to be written.</p>
+
+<p> <img class="center" src="/images/os/9_write.PNG" width="550" height="750" title="Write changes to disk" ></p></li>
+<li><p>Following a lengthy file write, the installation will ask about an HTTP proxy. This was not required for my set up and thus I left the field blank. The installation will then continue writing files.</p></li>
+<li><p>The installation now asks about Automatic Updating. Like many tech envoinments where change is not tolerated, Cloudera Manager and Hadoop are no different. Hadoop particularly does not deal well with changes in its environment. Keeping this in mind I selected no automatic updating to use my own discretion, and the installation continued.</p>
+
+<p><img class="center" src="/images/os/11_updates.PNG" width="550" height="750" title="No updates!" ></p></li>
+<li><p>Next, software needs to be selected for installation. The spacebar is used for selection and enter confirms selections. The selections will differ based on the type of cluster node. The OpenSSH server <strong>must</strong> be installed on <strong>all</strong> nodes in the cluster. Cloudera Manager and Hadoop use SSH. The LAMP server package should be installed on the master of the cluster (typhlosion in my case) if, like myself, MySQL is more appealing than a PostgreSQL database. Cloudera Manager can store all of its data in a MySQL database and the backup agent Bacula (to be described later) requires a MySQL installation. The slaves of the cluster do not require LAMP to be installed but if more then one of the components are needed, it is not a bad idea to install those now. For my cluster, I only need MySQL on the slaves, so I install that separately to reduce the number of extraneous services. Of course, if any of the other listed components are needed, they should be selected for installation now.</p>
+
+<p><img class="center" src="/images/os/12_software.PNG" width="550" height="750" title="Software selection" ></p></li>
+<li><p>If installing MySQL, the installation will display a prompt for a root user password. In this test cluster, I use the same password for all services to simplify the setup process. After entering the password, the installer will request confirmation and then continue writing files.</p>
+
+<p><img class="center" src="/images/os/13_mysqlpassword.PNG" width="550" height="750" title="Enter a MySQL password" ></p></li>
+<li><p>Finally, assuming no other OS is detected, select Yes and GRUB will be installed directly to the MBR. I do not recommend running multiple operating systems in a server environment. After GRUB is written the installation will complete and the machine will reboot after Continue is selected.</p>
+
+<p><img class="center" src="/images/os/14_grub.PNG" width="550" height="750" title="Install GRUB" ></p></li>
+</ol>
+
+
+<h2>Configuring the OS</h2>
+
+<p>All nodes in the cluster must be able to communicate with the other nodes. To simplify communication among the cluster nodes, each will be configured with a static IP address. The addresses will then be added to each node&rsquo;s <em>hosts</em> file.</p>
+
+<ol>
+<li><p>To configure a static IP address the following command should be issued:</p>
+
+<pre><code class="`"> sudo nano /etc/network/interfaces
+</code></pre>
+
+<p> Change the file to (with appropriate addresses for the network):</p>
+
+<pre><code class="`"> auto lo
+ iface lo inet loopback
+
+ iface eth0 inet static
+ address 10.1.0.113
+ gateway 10.1.0.1
+ netmask 255.255.255.0
+ dns-nameservers 8.8.8.8 8.8.4.4
+</code></pre></li>
+<li><p>Reboot the machine</p></li>
+<li><p>Issue the following command. If everything was configured properly, there will not be any packet loss.</p>
+
+<pre><code class="`"> ping -c 5 www.google.com
+</code></pre></li>
+<li><p>Repeat the process with the other nodes in the cluster.</p></li>
+<li><p>After rebooting the other nodes, the <em>hosts</em> files will need to be edited. On each node issue the following command:</p>
+
+<pre><code class="`"> sudo nano /etc/hosts
+</code></pre>
+
+<p> Change the file to:</p>
+
+<pre><code class="`"> 127.0.0.1       localhost
+ 127.0.1.1       typhlosion
+</code></pre></li>
+<li><p>Attempt to ping nodes from each other using the command</p>
+
+<pre><code class="`"> ping -c 5 hostname
+</code></pre></li>
+<li><p>For steps later in the cluster setup, it is helpful to have tmux installed. Tmux is a terminal multiplexer and allows the control of multiple programs from one terminal. Also, tmux will save your session in the event of a disconnect. This is very help when installing Cloudera Manager which does not easily tolerate interuptions to the install process. To insatll tmux, run</p>
+
+<pre><code class="`"> sudo apt-get install tmux
+</code></pre>
+
+<p> After the OSs on all the nodes in the cluster have been configured, the utility applications phpMyAdmin and Bacula can be installed. PhpMyAdmin will speed up database setup. Bacula creates a backup of the file system that can be restored if something goes wrong later when making changes. Following the installation of these tools, Cloudera Manager can be installed.</p></li>
+</ol>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Your Name</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-12-21T07:31:53-05:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2014</span></span> <span class='time'>7:31 am</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://thewibblywobbly.github.io/blog/2014/12/21/cluster-machine-setup-and-prep/" data-via="" data-counturl="http://thewibblywobbly.github.io/blog/2014/12/21/cluster-machine-setup-and-prep/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/12/24/installing-phpmyadmin/" title="Next Post: Installing phpMyAdmin">Installing phpMyAdmin &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/12/29/installing-cloudera-manager/">Installing Cloudera Manager</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/26/installing-bacula/">Installing, Configuring and Testing Bacula</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/24/installing-phpmyadmin/">Installing phpMyAdmin</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/12/21/cluster-machine-setup-and-prep/">Cluster Machine Setup and Prep</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Your Name -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

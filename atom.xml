@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[My Octopress Blog]]></title>
+  <link href="http://thewibblywobbly.github.io/atom.xml" rel="self"/>
+  <link href="http://thewibblywobbly.github.io/"/>
+  <updated>2014-12-29T13:51:25-05:00</updated>
+  <id>http://thewibblywobbly.github.io/</id>
+  <author>
+    <name><![CDATA[Your Name]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Installing Cloudera Manager]]></title>
+    <link href="http://thewibblywobbly.github.io/blog/2014/12/29/installing-cloudera-manager/"/>
+    <updated>2014-12-29T08:47:50-05:00</updated>
+    <id>http://thewibblywobbly.github.io/blog/2014/12/29/installing-cloudera-manager</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<p>Cloudera Manager (CM) will install the Oracle JDK, CDH (runs Hadoop), and other service management software. The manager administrates many services including HDFS, YARN, ZooKeeper, Oozie, Hive, Hue, Sqoop, HBase, Impala, Solr and Spark. Many of these can be installed only if they are needed. The CM installation process includes a section to select all or a subset of the services.</p>
+
+<ol>
+<li><p>Start a tmux session with</p>
+
+<pre><code class="`"> tmux
+</code></pre>
+
+<p> In the event of a disconnect reconnect to the machine and run</p>
+
+<pre><code class="`"> tmux a
+</code></pre>
+
+<p> Tmux will try to attach to a previously running session.</p></li>
+<li><p>Download and start the Cloudera Manager installer on the cluster manager</p>
+
+<pre><code class="`"> wget http://archive.cloudera.com/cm5/installer/latest/cloudera-manager-installer.bin
+ chmod u+x cloudera-manager-installer.bin
+ sudo ./cloudera-manager-installer.bin
+</code></pre></li>
+<li><p>If the installation was started correctly, it should display what is shown in the screenshot below. Select <em>Next</em> to continue.</p>
+
+<p> <img class="center" src="http://thewibblywobbly.github.io/images/cm/3_start.PNG" width="550" height="750" title="Select next" ></p></li>
+<li><p>Accept the Cloudera license</p></li>
+<li><p>Accept the Oracle binary license. The installer will process to install the Cloudera repository, gather files, and install the JDK followed by Cloudera Manager Server. Have patience as the installation can take some time.</p></li>
+<li></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Installing, Configuring and Testing Bacula]]></title>
+    <link href="http://thewibblywobbly.github.io/blog/2014/12/26/installing-bacula/"/>
+    <updated>2014-12-26T04:07:10-05:00</updated>
+    <id>http://thewibblywobbly.github.io/blog/2014/12/26/installing-bacula</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<h2>Installation</h2>
+
+<p>Cloudera Manager and Hadoop installations can be unstable so having backups of the file system becomes very important. Bacula create full, incremental, and differential backups of the filesystem. It support configuration of the backed up directory and exclusions to each backup. Bacula also allows restoration of previously created backups. To create these backups, restore files properly, and maintain other internal information, Bacula requires MySQL to be installed.</p>
+
+<ol>
+<li><p>To begin the install, issue the command:</p>
+
+<pre><code class="`"> sudo apt-get install bacula-server bacula-client
+</code></pre>
+
+<p> To simply the install process, select Yes when asked if dbconfig-common should be used. This requires entering the database administrator password.</p></li>
+<li><p>Create the directories to store Bacula&rsquo;s backup and restoration files</p>
+
+<pre><code class="`"> sudo mkdir -p /bacula/backup /bacula/restore
+</code></pre>
+
+<p> Also, change permission so Bacula create correctly read and write.</p>
+
+<pre><code class="`"> sudo chown -R bacula:bacula /bacula
+ sudo chmod -R 700 /bacula
+</code></pre></li>
+<li><p>Now, Bacula must be configured to backup and restore to appropriate locations. To begin, the <em>bacula-dir.conf</em> file must be edited (The next three steps edit this file as well).</p>
+
+<pre><code class="`"> sudo nano /etc/bacula/bacula-dir.conf
+</code></pre>
+
+<p> Within the <em>Job</em> under the comment block beginning <em>Standard Restore Template</em>, change the Where setting. To restore files in their original location it should be set to /. To restore them to the previously created directory, set it to <em>/bacula/restore</em>.</p>
+
+<p> I configured my install to restore to the original locations</p>
+
+<pre><code class="`"> Job {
+   Name = "RestoreFiles"
+   Type = Restore
+   Client=Blank-fd
+   FileSet="Full Set"
+   Storage = File
+   Pool = Default
+   Messages = Standard
+   Where = /
+ }
+</code></pre></li>
+<li><p>To conserve disk space, I configured Bacula to use GZIP compression. This is found in the options section of the FileSet listed under the comment <em>List of files to be backed up</em></p>
+
+<pre><code class="`"> Include {
+     Options {
+         signature = MD5
+         compression = GZIP
+     }
+ }
+</code></pre></li>
+<li><p>Then set file to / to back up the entire file system. This option is found after the compression option under the next comment block.</p>
+
+<pre><code class="`"> File = /
+</code></pre></li>
+<li><p>Now, configure Bacula to exclude its own file path. This is found in the exclude section, which should be just beyond the file option.</p>
+
+<pre><code class="`"> Exclude {
+     File = /var/lib/bacula
+     File = /bacula
+     File = /proc
+     File = /tmp
+     File = /.journal
+     File = /.fsck
+ }
+</code></pre></li>
+<li><p>Next, Bacula must be configured to back up the files described in the Job to the appropriate location. Backup locations are defined in <em>/etc/bacula/bacula-sd.conf</em></p>
+
+<pre><code class="`"> sudo nano /etc/bacula/bacula-sd.conf
+</code></pre>
+
+<p> Under to comment block beginning <em>Devices supported by this Storage daemon</em>, change the Device group to</p>
+
+<pre><code class="`"> Device {
+   Name = FileStorage
+   Media Type = File
+   Archive Device = /bacula/backup
+   LabelMedia = yes;                   # lets Bacula label unlabeled media
+   Random Access = Yes;
+   AutomaticMount = yes;               # when device opened, read it
+   RemovableMedia = no;
+   AlwaysOpen = no;
+ }
+</code></pre>
+
+<p> This sets the backup location to the directory created in a previous step.</p></li>
+<li><p>To validate the edited configuration, two command should be issued. If no errors are found, the command will return nothing.</p>
+
+<pre><code class="`"> sudo bacula-dir -tc /etc/bacula/bacula-dir.conf
+ sudo bacula-sd -tc /etc/bacula/bacula-sd.conf
+</code></pre></li>
+<li><p>Now, the Bacula services must be restarted to use the new configuration.</p>
+
+<pre><code class="`"> sudo service bacula-sd restart
+ sudo service bacula-director restart
+</code></pre></li>
+</ol>
+
+
+<h2>Testing Bacula</h2>
+
+<ol>
+<li><p>Bacula backups and restores are started from Bacula&rsquo;s console, it can be started with</p>
+
+<pre><code class="`"> sudo bconsole
+</code></pre></li>
+<li><p>To label the archive file created by the backup job that will be started in a later step use the command</p>
+
+<pre><code class="`"> label
+</code></pre>
+
+<p> It will prompt for a name, something like Initial_Backup can be entered.</p></li>
+<li><p>Next, the type of storage &ldquo;pool&rdquo;, to store the backup as a <em>File</em>, or archive select option 2 when prompted.</p></li>
+<li><p>To begin the backup operation</p>
+
+<pre><code class="`"> run
+</code></pre>
+
+<p> Select option 1, <em>BackupClient1</em>, to select the Job configured in the previous steps. This selects a full backup operation since this is the first backup made. If this job is done in the future, an incremental backup will be done. This can be reconfigured in the Job settings.</p></li>
+<li><p>To confirm the selections and start the backup type</p>
+
+<pre><code class="`"> yes
+</code></pre>
+
+<p> To view output generated by the job use the command</p>
+
+<pre><code class="`"> messages
+</code></pre>
+
+<p> When the backup has finished, <em>Backup: OK</em> will be displayed. To exit the console type</p>
+
+<pre><code class="`"> exit
+</code></pre></li>
+</ol>
+
+
+<h2>Restoring Files</h2>
+
+<p>When restoring files from a Bacula backup, a full backup must be restored before any incremental backups.</p>
+
+<p>To list all the backup jobs that have been executed use from the Bacula console</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>list jobs</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li><p>To restore all the files automatically type</p>
+
+<pre><code class="`"> restore all
+</code></pre></li>
+<li><p>Then use option 5 to select the most recent backup. All files will be preselected from the most recent backup for restoration since <em>all</em> was used. If all is not specified, files can be selected from the tree for restoration.</p></li>
+<li><p>To finish file selection type</p>
+
+<pre><code class="`"> done
+</code></pre></li>
+<li><p>Like during the backup procedure the following can be typed to view generated output</p>
+
+<pre><code class="`"> messages
+</code></pre></li>
+<li><p>When restoration has been completed type</p>
+
+<pre><code class="`"> exit
+</code></pre></li>
+</ol>
+
+
+<p>This covers a very basic restoration process. Documentation for the restore command exists here, for more advanced needs.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Installing phpMyAdmin]]></title>
+    <link href="http://thewibblywobbly.github.io/blog/2014/12/24/installing-phpmyadmin/"/>
+    <updated>2014-12-24T13:30:41-05:00</updated>
+    <id>http://thewibblywobbly.github.io/blog/2014/12/24/installing-phpmyadmin</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<p>phpMyAdmin simplies the task of database administration for all services running in the cluster. It is also incredibly useful when developing your own applications. Although the command line is still useful for certain DBA tasks, phpMyAdmin makes many faster and easier.</p>
+
+<ol>
+<li><p>To begin the installation issue the following command:</p>
+
+<pre><code class="`"> sudo apt-get install phpmyadmin apache2-utils
+</code></pre>
+
+<p> Installing apache2-utils allows for the configuration of user restrictions if desired later.</p></li>
+<li><p>Navigate to:</p>
+
+<pre><code class="`"> hostip/phpmyadmin
+</code></pre>
+
+<p> The installation should have configured Apache to serve phpMyAdmin. If for some reason phpMyAdmin was inaccessible, inspect:</p>
+
+<pre><code class="`"> /etc/apache2/apache2.conf
+</code></pre>
+
+<p> and add, this line if needed</p>
+
+<pre><code class="`"> Include /etc/phpmyadmin/apache.conf
+</code></pre>
+
+<p> Then restart apache</p>
+
+<pre><code class="`"> Include /etc/phpmyadmin/apache.conf
+</code></pre></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Cluster Machine Setup and Prep]]></title>
+    <link href="http://thewibblywobbly.github.io/blog/2014/12/21/cluster-machine-setup-and-prep/"/>
+    <updated>2014-12-21T07:31:53-05:00</updated>
+    <id>http://thewibblywobbly.github.io/blog/2014/12/21/cluster-machine-setup-and-prep</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<h2>Installing the OS</h2>
+
+<p>All machines in the cluster will use Cloudera Manager, mentioned in a previous post. Cloudera Manager <a href="http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_ig_cm_requirements.html" title="Cloudera Manager Requirements">requires</a> that all machines running the manager, and being managed, have a supported 64-bit OS installed. The following process should be followed on all nodes in the cluster</p>
+
+<ol>
+<li><p>Through experience I have found that CDH, a component of Cloudera Manager, runs smootly on Ubuntu 12.04 (Precise). Precise can be downloaded <a href="http://releases.ubuntu.com/12.04/" title="Ubuntu 12.04 Download">here</a>. For this project, a server installation was appropriate. There are many web interfaces and no substantial need for a desktop interface.</p></li>
+<li><p>Start the OS installation and configure appropriate regional settings including language and keyboard layout.</p></li>
+<li><p>The installation will ask for a hostname. All machines in the cluster should have a unique hostname. In my cluster I configured the machines as typhlosion, quilava and cyndaquil where typhlosion is the master of the cluster and the other two machines are slaves.</p>
+
+<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/3_hostname.png" width="550" height="750" title="Set up each host with an appropiate hostname" ></p></li>
+<li><p>The Ubuntu installation will then prompt for a username.</p>
+
+<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/4_username.png" width="550" height="750" title="Enter an appropriate username" ></p></li>
+<li><p>Enter and verify a memorable password.</p>
+
+<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/5_password.PNG" width="550" height="750" title="Enter an appropriate password" ></p></li>
+<li><p>For my project, I chose not to encrypt my home directory.</p>
+
+<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/6_encrypt.PNG" width="550" height="750" title="Encrypt your directory?" ></p></li>
+<li><p>An appropiate time zone should then be selected. I have seen references to problem occurring with CDH/Cloudera Manager when configuration options related to time are not set correctly, so ensure the correct time zone is selected on all machines in the cluster.</p>
+
+<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/7_timezone.PNG" width="550" height="750" title="Set and appropiate time zone" ></p></li>
+<li><p>On the cluster machines, I elected to use the entire disk without LVM for simplicity&rsquo;s sake. Following this step you will need to confirm the disk to partition.</p>
+
+<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/8_lvm.PNG" width="550" height="750" title="Use LVM?" ></p></li>
+<li><p>Finally, the installation will confirm and then write all changes to disk. Assuming everything on your screen is correct, select yes and wait for the files to be written.</p>
+
+<p> <img class="center" src="http://thewibblywobbly.github.io/images/os/9_write.PNG" width="550" height="750" title="Write changes to disk" ></p></li>
+<li><p>Following a lengthy file write, the installation will ask about an HTTP proxy. This was not required for my set up and thus I left the field blank. The installation will then continue writing files.</p></li>
+<li><p>The installation now asks about Automatic Updating. Like many tech envoinments where change is not tolerated, Cloudera Manager and Hadoop are no different. Hadoop particularly does not deal well with changes in its environment. Keeping this in mind I selected no automatic updating to use my own discretion, and the installation continued.</p>
+
+<p><img class="center" src="http://thewibblywobbly.github.io/images/os/11_updates.PNG" width="550" height="750" title="No updates!" ></p></li>
+<li><p>Next, software needs to be selected for installation. The spacebar is used for selection and enter confirms selections. The selections will differ based on the type of cluster node. The OpenSSH server <strong>must</strong> be installed on <strong>all</strong> nodes in the cluster. Cloudera Manager and Hadoop use SSH. The LAMP server package should be installed on the master of the cluster (typhlosion in my case) if, like myself, MySQL is more appealing than a PostgreSQL database. Cloudera Manager can store all of its data in a MySQL database and the backup agent Bacula (to be described later) requires a MySQL installation. The slaves of the cluster do not require LAMP to be installed but if more then one of the components are needed, it is not a bad idea to install those now. For my cluster, I only need MySQL on the slaves, so I install that separately to reduce the number of extraneous services. Of course, if any of the other listed components are needed, they should be selected for installation now.</p>
+
+<p><img class="center" src="http://thewibblywobbly.github.io/images/os/12_software.PNG" width="550" height="750" title="Software selection" ></p></li>
+<li><p>If installing MySQL, the installation will display a prompt for a root user password. In this test cluster, I use the same password for all services to simplify the setup process. After entering the password, the installer will request confirmation and then continue writing files.</p>
+
+<p><img class="center" src="http://thewibblywobbly.github.io/images/os/13_mysqlpassword.PNG" width="550" height="750" title="Enter a MySQL password" ></p></li>
+<li><p>Finally, assuming no other OS is detected, select Yes and GRUB will be installed directly to the MBR. I do not recommend running multiple operating systems in a server environment. After GRUB is written the installation will complete and the machine will reboot after Continue is selected.</p>
+
+<p><img class="center" src="http://thewibblywobbly.github.io/images/os/14_grub.PNG" width="550" height="750" title="Install GRUB" ></p></li>
+</ol>
+
+
+<h2>Configuring the OS</h2>
+
+<p>All nodes in the cluster must be able to communicate with the other nodes. To simplify communication among the cluster nodes, each will be configured with a static IP address. The addresses will then be added to each node&rsquo;s <em>hosts</em> file.</p>
+
+<ol>
+<li><p>To configure a static IP address the following command should be issued:</p>
+
+<pre><code class="`"> sudo nano /etc/network/interfaces
+</code></pre>
+
+<p> Change the file to (with appropriate addresses for the network):</p>
+
+<pre><code class="`"> auto lo
+ iface lo inet loopback
+
+ iface eth0 inet static
+ address 10.1.0.113
+ gateway 10.1.0.1
+ netmask 255.255.255.0
+ dns-nameservers 8.8.8.8 8.8.4.4
+</code></pre></li>
+<li><p>Reboot the machine</p></li>
+<li><p>Issue the following command. If everything was configured properly, there will not be any packet loss.</p>
+
+<pre><code class="`"> ping -c 5 www.google.com
+</code></pre></li>
+<li><p>Repeat the process with the other nodes in the cluster.</p></li>
+<li><p>After rebooting the other nodes, the <em>hosts</em> files will need to be edited. On each node issue the following command:</p>
+
+<pre><code class="`"> sudo nano /etc/hosts
+</code></pre>
+
+<p> Change the file to:</p>
+
+<pre><code class="`"> 127.0.0.1       localhost
+ 127.0.1.1       typhlosion
+</code></pre></li>
+<li><p>Attempt to ping nodes from each other using the command</p>
+
+<pre><code class="`"> ping -c 5 hostname
+</code></pre></li>
+<li><p>For steps later in the cluster setup, it is helpful to have tmux installed. Tmux is a terminal multiplexer and allows the control of multiple programs from one terminal. Also, tmux will save your session in the event of a disconnect. This is very help when installing Cloudera Manager which does not easily tolerate interuptions to the install process. To insatll tmux, run</p>
+
+<pre><code class="`"> sudo apt-get install tmux
+</code></pre>
+
+<p> After the OSs on all the nodes in the cluster have been configured, the utility applications phpMyAdmin and Bacula can be installed. PhpMyAdmin will speed up database setup. Bacula creates a backup of the file system that can be restored if something goes wrong later when making changes. Following the installation of these tools, Cloudera Manager can be installed.</p></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+</feed>
