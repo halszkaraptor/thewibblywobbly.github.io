@@ -99,13 +99,9 @@
       </header>
       <div id="main" role="main" class="container">
         <div id="content">
-          <div class="row">
-  <div class="page-content col-md-9" itemscope itemtype="http://schema.org/Blog">
-    <meta itemprop="name" content="To Boldly Code..." />
-    
-    <meta itemprop="url" content="http://boldlycoding.com" />
-    <article class="hentry" role="article" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-      
+          <div>
+<article class="hentry" role="article">
+  
   <header class="page-header">
     
       <p class="meta text-muted text-uppercase">
@@ -113,16 +109,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2014-12-29T08:47:51-05:00"  data-updated="true" itemprop="datePublished dateCreated">ordinal</time>
+<time class='entry-date' datetime='2014-12-29T08:47:51-05:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>8:47 am</span></time>
         
       </p>
     
@@ -166,39 +153,58 @@
 <li><p>When the installer finishes, it will indicate to open a web browser and navigate to the following url: <a href="http://localhost:7180/">http://localhost:7180/</a> The default username is <strong>admin</strong> and the password is <strong>admin</strong>. Open a web browser and use a url that will connect to the appropriate node in the cluster. After logging in, the installation will continue.</p>
 
 <p> <img class="center" src="/images/cm/6_browser.PNG" width="550" height="750" title="Open a web browser" ></p></li>
-<li><p>After signing in, the CM installer will displays a comparison of the different versions. Cloudera Express supports the goals of my project, if Enterprise is selected a trial will be provided for 60 days and then all features will return to the level of Cloudera Express. After reviewing the offerings, click continue.</p></li>
+<li><p>After signing in, the CM installer will displays a comparison of the different versions. Cloudera Express supports the goals of my project, if Enterprise is selected a trial will be provided for 60 days and then all features will return to the level of Cloudera Express. After reviewing the offerings, click your desired offering and then click continue.</p></li>
+<li><p>CM displays the services available, click continue.</p></li>
+<li><p>Now, all the nodes in the cluster will need to be selected. To select hosts, patterns are supported. Supported patters include</p>
+
+<pre><code class="`"> 10.1.1.[1-4] -&gt; 10.1.1.1, 10.1.1.2, 10.1.1.3, 10.1.1.4
+ host[1-3].network.com -&gt; host1.network.com, host2.network.com, host3.network.com
+ host[07-10].network.com -&gt; host07.network.com, host08.network.com, host09.network.com, host10.network.com
+</code></pre>
+
+<p> My cluster has three hosts, and I chose to use IP address patterns. To select all the hosts I entered</p>
+
+<pre><code class="`"> 10.1.0.[111-113]
+</code></pre>
+
+<p> If hosts are successfully found CM should display the following after clicking search</p>
+
+<p> <img class="center" src="/images/cm/9_hosts.PNG" width="550" height="750" title="Hosts were found" ></p>
+
+<p> If all the hosts were found, click continue, otherwise check the entered pattern/hostnames before continuing.</p></li>
+<li><p>The CM installer will now confirm repository options, the defaults should be appropriate, so just click Continue.</p>
+
+<p><img class="center" src="/images/cm/10_repo.PNG" width="550" height="750" title="Hosts were found" ></p></li>
+<li><p>Next, the installer displays the Oracle license for the JDK. Click the check box at the bottom and then click Continue. Unless needed, the check box for Java Unlimited Strength Encryption Policy files does not need to be checked.</p></li>
+<li><p>The installer will now ask if services should be installed in single user mode. To simplify the installation, <strong>do not</strong> click the check box and just click continue.</p></li>
+<li><p>The installer will now need root SSH credentials. Ensure that root access via SSH on all hosts is possible and enter the appropriate credentials and port number. To simplify my own installation process, I have configured all root passwords in the cluster to be the same.</p>
+
+<p><img class="center" src="/images/cm/13_ssh.PNG" width="550" height="750" title="EnterSSH info" ></p>
+
+<p>After clicking continue, the installer will write needed files to all hosts in the cluster.</p></li>
 </ol>
 
 </div>
 
 
-      <footer>
-        <p class="meta text-muted">
-          
+  <footer>
+    <p class="meta">
+      
   
 
 <span class="glyphicon glyphicon-user"></span> <span class="byline author vcard" itemprop="author" itemscope itemtype="http://schema.org/Person">Posted by <span class="fn" itemprop="name">George McDaid</span></span>
 
-          
+      
 
 
 
+<time class='entry-date' datetime='2014-12-29T08:47:51-05:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>8:47 am</span></time>
+      
 
 
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2014-12-29T08:47:51-05:00"  data-updated="true" itemprop="datePublished dateCreated">ordinal</time>
-          
-
-
-        </p>
-        
-          <div class="sharing">
+    </p>
+    
+      <div class="sharing">
   
   <a href="//twitter.com/share" class="twitter-share-button" data-url="http://boldlycoding.com/blog/2014/12/29/installing-cloudera-manager/" data-via="" data-counturl="http://boldlycoding.com/blog/2014/12/29/installing-cloudera-manager/" >Tweet</a>
   
@@ -206,24 +212,21 @@
   
 </div>
 
-        
-        
-          <ul class="meta text-muted pager">
-            
-            <li class="previous"><a href="/blog/2014/12/26/installing-bacula/" title="Previous Post: Installing, Configuring and Testing Bacula">&laquo; Installing, Configuring and Testing Bacula</a></li>
-            
-            
-          </ul>
-        
-      </footer>
-    </article>
     
-  </div>
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/12/26/installing-bacula/" title="Previous Post: Installing, Configuring and Testing Bacula">&laquo; Installing, Configuring and Testing Bacula</a>
+      
+      
+    </p>
+  </footer>
+</article>
 
+</div>
+
+<aside class="sidebar">
   
-  <aside class="sidebar col-md-3">
-    
-      <section class="panel panel-default">
+    <section class="panel panel-default">
   <div class="panel-heading">
     <h3 class="panel-title">Recent Posts</h3>
   </div>
@@ -246,10 +249,8 @@
 
 
 
-    
-  </aside>
   
-</div>
+</aside>
 
         </div>
       </div>
