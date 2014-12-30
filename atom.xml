@@ -4,7 +4,7 @@
   <title><![CDATA[To Boldly Code...]]></title>
   <link href="http://boldlycoding.com/atom.xml" rel="self"/>
   <link href="http://boldlycoding.com/"/>
-  <updated>2014-12-29T14:36:11-05:00</updated>
+  <updated>2014-12-30T08:00:08-05:00</updated>
   <id>http://boldlycoding.com/</id>
   <author>
     <name><![CDATA[George McDaid]]></name>
@@ -49,6 +49,7 @@
 <li><p>When the installer finishes, it will indicate to open a web browser and navigate to the following url: <a href="http://localhost:7180/">http://localhost:7180/</a> The default username is <strong>admin</strong> and the password is <strong>admin</strong>. Open a web browser and use a url that will connect to the appropriate node in the cluster. After logging in, the installation will continue.</p>
 
 <p> <img class="center" src="http://boldlycoding.com/images/cm/6_browser.PNG" width="550" height="750" title="Open a web browser" ></p></li>
+<li><p>After signing in, the CM installer will displays a comparison of the different versions. Cloudera Express supports the goals of my project, if Enterprise is selected a trial will be provided for 60 days and then all features will return to the level of Cloudera Express. After reviewing the offerings, click continue.</p></li>
 </ol>
 
 ]]></content>
