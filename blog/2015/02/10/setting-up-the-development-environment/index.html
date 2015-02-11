@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Setting Up the Development Environment - To Boldly Code&#8230;</title>
+  <meta name="author" content="George McDaid">
+
+  
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://boldlycoding.com/blog/2015/02/10/setting-up-the-development-environment">
+  <link href="/favicon.png" type="image/png" rel="icon">
+  <link href="/atom.xml" rel="alternate" title="To Boldly Code..." type="application/atom+xml">
+
+  <!-- http://opengraphprotocol.org/ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://boldlycoding.com/blog/2015/02/10/setting-up-the-development-environment">
+  <meta property="og:title" content="Setting Up the Development Environment - To Boldly Code...">
+  
+
+  <script src="/javascripts/libs/jquery/jquery-2.0.3.min.js"></script>
+
+<link href="http://bootswatch.com/cerulean/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+
+  
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+
+  
+   <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-28443557-2', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+
+
+</head>
+
+  <body   >
+    <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+    <div id="wrap">
+      <header role="banner">
+        <nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">To Boldly Code&#8230;</a>
+        </div>
+
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="active">
+                    <a rel="index" href="/">Blog</a>
+                </li>
+                <li >
+                    <a href="/blog/archives">Archives</a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                
+                    <li>
+                        <form class="search navbar-form navbar-right" action="https://www.google.com/search" method="GET">
+                            <input type="hidden" name="q" value="site:boldlycoding.com">
+                            <div class="form-group">
+                                <input class="form-control" type="text" name="q" placeholder="Search">
+                            </div>
+                        </form>
+                    </li>
+                
+                <li>
+                    <a class="subscribe-rss" href="/atom.xml" title="subscribe via RSS">
+                        <span class="visible-xs">RSS</span>
+                        <img class="hidden-xs" src="/images/rss.png" alt="RSS">
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+      </header>
+      <div id="main" role="main" class="container">
+        <div id="content">
+          <div>
+<article class="hentry" role="article">
+  
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+<time class='entry-date' datetime='2015-02-10T20:21:10-05:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>8:21 pm</span></time>
+        
+      </p>
+    
+    
+    <h1 class="entry-title" itemprop="name headline">
+        Setting Up the Development Environment
+        
+    </h1>
+    
+  </header>
+
+
+<div class="entry-content clearfix" itemprop="articleBody description"><!-- more -->
+
+
+<h2>What is the Homestead and Vagrant?</h2>
+
+<p>Homestead and Vagrant are two separate products the aid the development of Laravel applications. Before Homestead is discussed in detail, it is useful to have an understanding of Vagrant.</p>
+
+<p>Vagrant is used to automate and simplify the construction of development environments that are portable, lightweight and easy to duplicate. Normally the process of setting up a development environment consists of creating a virtual disk, mounting an ISO, going through an OS installation and installing all required packages (This process frequently needs to be done more than once given how unstable certain development environment are). Vagrant&rsquo;s pre-built environment are known as <em>boxes</em>. After a box is added to the local vagrant installation and started it supports operations including SSH, folder syncing, and web host setup. With vagrant, boxes are downloaded with all the setup done in advance. The box is added to vagrant via command line and the <em>up</em> command is called. The process is much shorter and many degrees simpler then the normal process without vagrant. Since boxes are downloaded already set up, this also creates identical environments if multiple developers are involved on a project. Developing a project in identical environments create code that is much more stable and likely to run in a production environment (If the development environment is similar to that of production). Now that a basic understanding of Vagrant has been established, the Homestead can be discussed.</p>
+
+<p>The Homestead is a Vagrant box produced by Taylor Otwell, the creator of Laravel. Since the Homestead was created by the &ldquo;creator,&rdquo; it is much more stable and well suited to Laravel development than a ordinary setup. Less configuration is all required since much of that has been done already. The Homestead includes Ubuntu 14.04, PHP, Nginx web server, and MySQL, configured and ready for development from startup (There are other included software packages but these are the most notable for my project).</p>
+
+<h2>Installing the Homestead</h2>
+
+<ol>
+<li><p>To use the Homestead, <a href="https://www.virtualbox.org/wiki/Downloads" title="Install VirtualBox">VirtualBox</a> and <a href="http://www.vagrantup.com/downloads.html" title="Install Vagrant">Vagrant</a> must be installed.</p></li>
+<li><p>Next, the Laravel Homestead box must be added to the local vagrant installation. This is done with the following command</p></li>
+</ol>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>vagrant box add laravel/homestead</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>Following the download of the Homestead box, the Homestead CLI to start, stop, and modify the Homestead box must be installed. This can be done with composer and PHP or by cloning the git repo. I do not like to have a PHP installation running on my local machine, so I insatlled it via the git repo. To clone the repo use the following command (Be sure to clone the repo to a central location where most laraval applications can be found)</li>
+</ol>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git clone https://github.com/laravel/homestead.git Homestead</span></code></pre></td></tr></table></div></figure>
+
+
+<p>To create the Homestead configuration file, run (The file Homestead.yaml will be created in ~/.homestead)</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>bash init.sh</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next the SSH key must be set up using the ssh-keygen command. I selected the default file name and path so the Homestead.yaml file would not need to be edited.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh-keygen -t rsa -C "gmcdaid@homestead"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After configuring the SSH Key, shared folders need to be set up. Shared folder are shared between the OS and Vagrant Box. A change made on the local file system will be instantly reflected in that of the Vagrant Box. This is a very useful feature included in the Vagrant work flow. To configure folder sharing, edit the Homestead.yaml file to reflect something like the following (The mapping is from the local machine to the vagrant box)</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>folders:
+</span><span class='line'>    - map: C:\\laravel\\code
+</span><span class='line'>      to: /home/vagrant/Code/</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, sites for the Homestead need to be configured. Sites operate much like Virtual Hosts with Apache. Specified URLs get mapped to a particular directory on the filsystem. When a request is made to a URL the web server on the Homestead box will server pages in the specified directory. Mapping for sites is similar to mapping for folders</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sites:
+</span><span class='line'>    - map: homestead.app
+</span><span class='line'>      to: /home/vagrant/Code/laravel/public</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Both sites and folders can have multiple entries. And something found in folders does not need to be in sites. If PHP scripts need to be run but not in a web browser, a folder mapping can be created without a site map.</p>
+
+<p>The only software package not included in the Homstead which is necessary to my personal work flow is phpMyAdmin. Luckily, it was not hard to install. (The install process assumes Laravel projects are in /home/vagrant/Code)</p>
+
+<p>First run</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo apt-get install phpmyadmin (Do not select apache or lighttpd, just continue)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd ~/Code && serve phpmyadmin.app /usr/share/phpmyadmin/</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally, the following should be added to the hosts file on the main machine</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>127.0.0.1 phpmyadmin.app</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Start the Homestead box with</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>vagrant up</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The phpMyAdmin interface should now be available at <a href="http://phpmyadmin.app:8000/" title="phpMyAdmin">http://phpmyadmin.app:8000/</a>. The default username/password is homestead/secret.</p>
+
+<p>Laravel&rsquo;s homestead environment is now fully configured and ready for development.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="glyphicon glyphicon-user"></span> <span class="byline author vcard" itemprop="author" itemscope itemtype="http://schema.org/Person">Posted by <span class="fn" itemprop="name">George McDaid</span></span>
+
+      
+
+
+
+<time class='entry-date' datetime='2015-02-10T20:21:10-05:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>8:21 pm</span></time>
+      
+
+<span class="glyphicon glyphicon-tags"></span>&nbsp;
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/is-2015/'>is 2015</a>, <a class='category' href='/blog/categories/laravel/'>laravel</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://boldlycoding.com/blog/2015/02/10/setting-up-the-development-environment/" data-via="" data-counturl="http://boldlycoding.com/blog/2015/02/10/setting-up-the-development-environment/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/02/06/laravel-as-an-enterprise-php-framework/" title="Previous Post: Laravel as an Enterprise PHP Framework">&laquo; Laravel as an Enterprise PHP Framework</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/02/10/laravel-and-the-database/" title="Next Post: Laravel and the Database">Laravel and the Database &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Recent Posts</h3>
+  </div>
+  
+  <div id="recent_posts" class="list-group">
+    
+    <a class="list-group-item " href="/blog/2015/02/11/twitter-trends/">Twitter Trends</a>
+    
+    <a class="list-group-item " href="/blog/2015/02/10/laravel-and-the-database/">Laravel and the Database</a>
+    
+    <a class="list-group-item active" href="/blog/2015/02/10/setting-up-the-development-environment/">Setting Up the Development Environment</a>
+    
+    <a class="list-group-item " href="/blog/2015/02/06/laravel-as-an-enterprise-php-framework/">Laravel as an Enterprise PHP Framework</a>
+    
+    <a class="list-group-item " href="/blog/2014/12/29/installing-cloudera-manager/">Installing Cloudera Manager</a>
+    
+  </div>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+        </div>
+      </div>
+    </div>
+    <footer role="contentinfo"><div class="container">
+    <p class="text-muted credits">
+  Copyright &copy; 2015 - George McDaid<br>
+  <small>
+      <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>,
+      <span class="credit">customized with <a href="https://github.com/kAworu/octostrap3">octostrap3</a></span>.
+  </small>
+</p>
+
+</div>
+</footer>
+    
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="/javascripts/modernizr-2.0.js"></script>
+
+
+  </body>
+</html>

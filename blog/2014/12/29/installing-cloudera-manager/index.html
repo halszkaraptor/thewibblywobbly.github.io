@@ -179,9 +179,96 @@
 <li><p>The installer will now ask if services should be installed in single user mode. To simplify the installation, <strong>do not</strong> click the check box and just click continue.</p></li>
 <li><p>The installer will now need root SSH credentials. Ensure that root access via SSH on all hosts is possible and enter the appropriate credentials and port number. To simplify my own installation process, I have configured all root passwords in the cluster to be the same.</p>
 
-<p><img class="center" src="/images/cm/13_ssh.PNG" width="550" height="750" title="EnterSSH info" ></p>
+<p><img class="center" src="/images/cm/13_ssh.PNG" width="550" height="750" title="Enter SSH info" ></p>
 
 <p>After clicking continue, the installer will write needed files to all hosts in the cluster.</p></li>
+<li><p>After the files have been written, the installer will indicate that operations have completed successfully. Click continue. If problems were encountered, an attempt to remove CM can be made and the installation restarted.</p>
+
+<p><img class="center" src="/images/cm/14_cis.PNG" width="550" height="750" title="Cluster install successful" ></p></li>
+<li><p>CM will now download, distribute and activate parcels on all hosts. After this process is complete, click Continue.</p>
+
+<p><img class="center" src="/images/cm/15_parcel.PNG" width="550" height="750" title="Completed parcel distribution" ></p></li>
+<li><p>Finally, CM will inspect all the hosts in the cluster. I do not recommend skipping this step. It will check for many common problems. If any are found, correct them. Otherwise, click finish to complete the CM installation.</p></li>
+<li><p>Now CDH 5 services need to be selected. For my project I required HDFS, Hive, Hue (A great web interface for Hadoop administration) and YARN (Oozie will also be installed since Hue requires it). To install this subset of services, click the Custom Services radio button. Select the aforementioned services, and click Continue.</p></li>
+<li><p>Cloudera Manager will next require that all roles in the cluster be delegated to nodes in the cluster. The master of the cluster should run all services except the HDFS DataNode and the YARN NodeManager. This would not be done in a production cluster as it would degrade performance of the services, but it is suitable for a test cluster. Ensure the master is also running the Cloudera Management Service, this was not selected to run on any nodes during my installation, but the ACtivity Monitor is a useful service to have running. After correctly delegating all the service to the nodes, click Continue.</p></li>
+<li><p>The database needs to be configured for CM and CDH services. I prefer to use a MySQL database to maintain the necessary information. To configure MySQL for CM</p>
+
+<p>Stop MySQL</p>
+
+<pre><code>sudo service mysql stop
+</code></pre>
+
+<p>Edit <em>/etc/my.cnf</em></p>
+
+<pre><code>sudo nano /etc/mysql/my.cnf
+</code></pre>
+
+<p>Change the file to the following (Keeping your own hardware restrictions in mind). Also, note max_connections, in a small cluster (&lt;50 nodes) this can be set to 250. In a larger cluster this can be set to 750.</p>
+
+<pre><code>[mysqld]
+transaction-isolation=READ-COMMITTED
+# Disabling symbolic-links is recommended to prevent assorted security risks;
+# to do so, uncomment this line:
+# symbolic-links=0
+
+key_buffer              = 16M
+key_buffer_size         = 32M
+max_allowed_packet      = 16M
+thread_stack            = 256K
+thread_cache_size       = 8
+query_cache_limit       = 8M
+query_cache_size        = 32M
+query_cache_type        = 1
+
+max_connections         = 250
+
+# log-bin should be on a disk with enough free space
+#log-bin=/x/home/mysql/logs/binary/mysql_binary_log
+
+# For MySQL version 5.1.8 or later. Comment out binlog_format for older versions.
+#binlog_format           = mixed
+
+read_buffer_size = 2M
+read_rnd_buffer_size = 16M
+sort_buffer_size = 8M
+join_buffer_size = 8M
+
+# InnoDB settings
+innodb_file_per_table = 1
+innodb_flush_log_at_trx_commit  = 2
+#innodb_log_buffer_size          = 50M
+
+#256MB for every 2GB of RAM installed
+innodb_buffer_pool_size         = 256M
+
+#innodb_thread_concurrency = 2 * (cpu cores + disks)
+innodb_thread_concurrency       = 4 
+
+innodb_flush_method             = O_DIRECT
+#innodb_log_file_size = 50M
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+</code></pre>
+
+<p>Start MySQL</p>
+
+<pre><code>sudo service mysql start
+</code></pre>
+
+<p>If MySQL fails to start, run the following for error indications
+<code>
+cat /var/log/mysql/error.log
+</code></p>
+
+<p>Install the MySQL JDBC connector</p>
+
+<pre><code>sudo apt-get install libmysql-java
+</code></pre>
+
+<p>Now create the indicated databases and users (with the shown password) using the MySQL CLI or phpMyAdmin. Once everything has been created with the appropriate passwords, click Continue.</p></li>
+<li></li>
 </ol>
 
 </div>
@@ -201,6 +288,13 @@
 <time class='entry-date' datetime='2014-12-29T08:47:51-05:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>8:47 am</span></time>
       
 
+<span class="glyphicon glyphicon-tags"></span>&nbsp;
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/big-data/'>big data</a>, <a class='category' href='/blog/categories/capstone-2015/'>capstone 2015</a>, <a class='category' href='/blog/categories/cloudera/'>cloudera</a>
+  
+</span>
+
 
     </p>
     
@@ -218,6 +312,8 @@
         <a class="basic-alignment left" href="/blog/2014/12/26/installing-bacula/" title="Previous Post: Installing, Configuring and Testing Bacula">&laquo; Installing, Configuring and Testing Bacula</a>
       
       
+        <a class="basic-alignment right" href="/blog/2015/02/06/laravel-as-an-enterprise-php-framework/" title="Next Post: Laravel as an Enterprise PHP Framework">Laravel as an Enterprise PHP Framework &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -233,13 +329,15 @@
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/blog/2015/02/11/twitter-trends/">Twitter Trends</a>
+    
+    <a class="list-group-item " href="/blog/2015/02/10/laravel-and-the-database/">Laravel and the Database</a>
+    
+    <a class="list-group-item " href="/blog/2015/02/10/setting-up-the-development-environment/">Setting Up the Development Environment</a>
+    
+    <a class="list-group-item " href="/blog/2015/02/06/laravel-as-an-enterprise-php-framework/">Laravel as an Enterprise PHP Framework</a>
+    
     <a class="list-group-item active" href="/blog/2014/12/29/installing-cloudera-manager/">Installing Cloudera Manager</a>
-    
-    <a class="list-group-item " href="/blog/2014/12/26/installing-bacula/">Installing, Configuring and Testing Bacula</a>
-    
-    <a class="list-group-item " href="/blog/2014/12/24/installing-phpmyadmin/">Installing phpMyAdmin</a>
-    
-    <a class="list-group-item " href="/blog/2014/12/21/cluster-machine-setup-and-prep/">Cluster Machine Setup and Prep</a>
     
   </div>
 </section>
@@ -257,7 +355,7 @@
     </div>
     <footer role="contentinfo"><div class="container">
     <p class="text-muted credits">
-  Copyright &copy; 2014 - George McDaid<br>
+  Copyright &copy; 2015 - George McDaid<br>
   <small>
       <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>,
       <span class="credit">customized with <a href="https://github.com/kAworu/octostrap3">octostrap3</a></span>.

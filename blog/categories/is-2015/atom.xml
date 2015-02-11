@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Is 2015 | To Boldly Code...]]></title>
+  <link href="http://boldlycoding.com/blog/categories/is-2015/atom.xml" rel="self"/>
+  <link href="http://boldlycoding.com/"/>
+  <updated>2015-02-11T02:08:17-05:00</updated>
+  <id>http://boldlycoding.com/</id>
+  <author>
+    <name><![CDATA[George McDaid]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Laravel and the Database]]></title>
+    <link href="http://boldlycoding.com/blog/2015/02/10/laravel-and-the-database/"/>
+    <updated>2015-02-10T23:13:31-05:00</updated>
+    <id>http://boldlycoding.com/blog/2015/02/10/laravel-and-the-database</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<p>Even before web development, Laravel begins bringing improvements to database operations. To improve development, Laravel provides a query builder, the Eloquent ORM, Migrations and Seeding. Although all these tools may not cater perfectly to every scenario encountered, the benefits tend to outweigh costs encountered.</p>
+
+<h2>The Database Configuration</h2>
+
+<p>Before any specific features are discussed, it is useful to be aware of Laravel&rsquo;s database configuration. The database configuration file is location in app/config/database.php. Here the default database can be selected and other database conncetions can be specified. Laravel supports connection with MySQL, Postgres, SQLite, and SQL Server. This file also set that table where Laravel will store its migrations. All database configuration options should be placed in this file.</p>
+
+<h2>Laravel&rsquo;s Query Builder</h2>
+
+<p>Laravel&rsquo;s query builder tends to be as powerful as raw SQL. It also protects against SQL injection so string cleaning is not necessary. Another benefit of the query builder is the simplicity and cleanliness of the code. A select statement can be done with the following line</p>
+
+<pre><code>```
+$users = DB::table('users')-&gt;get();
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/code&gt;&lt;/pre&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;There is no need to specify a SQL string or have another call to run the query. The total number of characters is also reduced compared to the typical PHP/SQL implementation. All of the attributes are then accessed in the following fashion. This too is as simple as the select statement.&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;pre&gt;&lt;code&gt;```
+</span><span class='line'>foreach ($users as $user)
+</span><span class='line'>{
+</span><span class='line'>    var_dump($user-&gt;name);
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+</code></pre>
+
+<p>A more advanced query may look like the follwing. It retains the simplicity of the former operations as well as the power of raw PHP/SQL.</p>
+
+<pre><code>```
+$users = DB::table('users')
+                -&gt;orderBy('name', 'desc')
+                -&gt;groupBy('count')
+                -&gt;having('count', '&gt;', 100)
+                -&gt;get();
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/code&gt;&lt;/pre&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;The query builder also supports all of the other normal SQL functions, but all those will not be described here. One point where the query builder becomes somewhat more cumbersome than SQL is when an advanced where clause is needed. When such a clause is required, a closure must be used. A Laravel closure is an anonymous function used within another construct. The following shows an advanced where with a closure&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;pre&gt;&lt;code&gt;```
+</span><span class='line'>DB::table('users')
+</span><span class='line'>        -&gt;where('name', '=', 'John')
+</span><span class='line'>        -&gt;orWhere(function($query)
+</span><span class='line'>        {
+</span><span class='line'>            $query-&gt;where('votes', '&gt;', 100)
+</span><span class='line'>                  -&gt;where('title', '&lt;&gt;', 'Admin');
+</span><span class='line'>        })
+</span><span class='line'>        -&gt;get();</span></code></pre></td></tr></table></div></figure>
+</code></pre>
+
+<p>Overall, the query builder is much more organized than using raw PHP/SQL. Since everything is also implemented using OO concepts, mistakes are much less common. Operations will only be supported if they are valid for the current object in use. However, this the most basic way to interact with a database under the Laravel framework. The Eloquent ORM is much more advanced and provide more capabilities.</p>
+
+<h2>Eloquent ORM</h2>
+
+<p>Eloquent ORM is Laravel&rsquo;s implementation of an Active Record system. All tables in the database are tied to Models, so all table can be interacted with as objects. All models should be housed in the app/models directory. A basic sample model would look like the following</p>
+
+<pre><code>```
+class Vendor extends Model {
+
+    protected $table = 'Vendor';
+
+    public function product()
+    {   
+        return $this-&gt;hasMany('Product', 'product_id');
+    }
+
+}       
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/code&gt;&lt;/pre&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;This is a basic model for Vendors and the relationship with Products is implemented with the hasMany function.&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;Then to interact with the model, this statement could be used&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;pre&gt;&lt;code&gt;```
+</span><span class='line'>$vendors = Vendor::all();</span></code></pre></td></tr></table></div></figure>
+</code></pre>
+
+<p>This returns all of the users in the form of objects. The attributes are retrieved in the same was as with the query builder. Although it retains the organization of the query builder, Eloquent ORM does not cater well to complex queries. I found myself frequently using elements of the basic query builder. Eloquent makes up for this with its relationship evaluation. Referencing the previous example, after getting the vendors, the products can be iterated over without any other queries. In Laravel this is called a dynamic property and is a huge advantage of the framework.</p>
+
+<h2>Migrations</h2>
+
+<p>One of the most useful database tools offered by Laravel is the migration. Laravel migration are version control for the database. When a change must be made to the database, a new migration is created. All migration have an up and down method that are run for migrate and rollback respectively. After editing the migration, all migration can be run with</p>
+
+<pre><code>```
+php artisan migrate
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/code&gt;&lt;/pre&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;This is like pushing a series of commits with git.&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;p&gt;To roll back run&lt;/p&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;pre&gt;&lt;code&gt;```
+</span><span class='line'>php artisan migrate:rollback</span></code></pre></td></tr></table></div></figure>
+</code></pre>
+
+<p>Migrations can be used to create the database and keep track of call changes that occur over the lifetime of a project. If a problem is encountered a roll back can be issued and another can be created to remedy the problem.</p>
+
+<h2>Seeding</h2>
+
+<p>Seeding is another useful feature Laravel provides although not extremely innovative. Seeding can be accomplished with a simple PHP script. Laravel does not provide any truly innovative or extremely capability. It is however useful for organization purposes to have to migrations and seeding script location in one place. it avoids the problem of dispersing scripts and functions across a webserver which happens with many projects. A typical migration consists of the following</p>
+
+<pre><code>```
+class UserTableSeeder extends Seeder {
+
+    public function run()
+    {
+        DB::table('users')-&gt;delete();
+
+        User::create(array('email' =&gt; 'foo@bar.com'));
+    }
+
+}
+```
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Setting Up the Development Environment]]></title>
+    <link href="http://boldlycoding.com/blog/2015/02/10/setting-up-the-development-environment/"/>
+    <updated>2015-02-10T20:21:10-05:00</updated>
+    <id>http://boldlycoding.com/blog/2015/02/10/setting-up-the-development-environment</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<h2>What is the Homestead and Vagrant?</h2>
+
+<p>Homestead and Vagrant are two separate products the aid the development of Laravel applications. Before Homestead is discussed in detail, it is useful to have an understanding of Vagrant.</p>
+
+<p>Vagrant is used to automate and simplify the construction of development environments that are portable, lightweight and easy to duplicate. Normally the process of setting up a development environment consists of creating a virtual disk, mounting an ISO, going through an OS installation and installing all required packages (This process frequently needs to be done more than once given how unstable certain development environment are). Vagrant&rsquo;s pre-built environment are known as <em>boxes</em>. After a box is added to the local vagrant installation and started it supports operations including SSH, folder syncing, and web host setup. With vagrant, boxes are downloaded with all the setup done in advance. The box is added to vagrant via command line and the <em>up</em> command is called. The process is much shorter and many degrees simpler then the normal process without vagrant. Since boxes are downloaded already set up, this also creates identical environments if multiple developers are involved on a project. Developing a project in identical environments create code that is much more stable and likely to run in a production environment (If the development environment is similar to that of production). Now that a basic understanding of Vagrant has been established, the Homestead can be discussed.</p>
+
+<p>The Homestead is a Vagrant box produced by Taylor Otwell, the creator of Laravel. Since the Homestead was created by the &ldquo;creator,&rdquo; it is much more stable and well suited to Laravel development than a ordinary setup. Less configuration is all required since much of that has been done already. The Homestead includes Ubuntu 14.04, PHP, Nginx web server, and MySQL, configured and ready for development from startup (There are other included software packages but these are the most notable for my project).</p>
+
+<h2>Installing the Homestead</h2>
+
+<ol>
+<li><p>To use the Homestead, <a href="https://www.virtualbox.org/wiki/Downloads" title="Install VirtualBox">VirtualBox</a> and <a href="http://www.vagrantup.com/downloads.html" title="Install Vagrant">Vagrant</a> must be installed.</p></li>
+<li><p>Next, the Laravel Homestead box must be added to the local vagrant installation. This is done with the following command</p></li>
+</ol>
+
+
+<pre><code>vagrant box add laravel/homestead
+</code></pre>
+
+<ol>
+<li>Following the download of the Homestead box, the Homestead CLI to start, stop, and modify the Homestead box must be installed. This can be done with composer and PHP or by cloning the git repo. I do not like to have a PHP installation running on my local machine, so I insatlled it via the git repo. To clone the repo use the following command (Be sure to clone the repo to a central location where most laraval applications can be found)</li>
+</ol>
+
+
+<pre><code>git clone https://github.com/laravel/homestead.git Homestead
+</code></pre>
+
+<p>To create the Homestead configuration file, run (The file Homestead.yaml will be created in ~/.homestead)</p>
+
+<pre><code>bash init.sh
+</code></pre>
+
+<p>Next the SSH key must be set up using the ssh-keygen command. I selected the default file name and path so the Homestead.yaml file would not need to be edited.</p>
+
+<pre><code>ssh-keygen -t rsa -C "gmcdaid@homestead"
+</code></pre>
+
+<p>After configuring the SSH Key, shared folders need to be set up. Shared folder are shared between the OS and Vagrant Box. A change made on the local file system will be instantly reflected in that of the Vagrant Box. This is a very useful feature included in the Vagrant work flow. To configure folder sharing, edit the Homestead.yaml file to reflect something like the following (The mapping is from the local machine to the vagrant box)</p>
+
+<pre><code>folders:
+    - map: C:\\laravel\\code
+      to: /home/vagrant/Code/
+</code></pre>
+
+<p>Now, sites for the Homestead need to be configured. Sites operate much like Virtual Hosts with Apache. Specified URLs get mapped to a particular directory on the filsystem. When a request is made to a URL the web server on the Homestead box will server pages in the specified directory. Mapping for sites is similar to mapping for folders</p>
+
+<pre><code>sites:
+    - map: homestead.app
+      to: /home/vagrant/Code/laravel/public
+</code></pre>
+
+<p>Both sites and folders can have multiple entries. And something found in folders does not need to be in sites. If PHP scripts need to be run but not in a web browser, a folder mapping can be created without a site map.</p>
+
+<p>The only software package not included in the Homstead which is necessary to my personal work flow is phpMyAdmin. Luckily, it was not hard to install. (The install process assumes Laravel projects are in /home/vagrant/Code)</p>
+
+<p>First run</p>
+
+<pre><code>sudo apt-get install phpmyadmin (Do not select apache or lighttpd, just continue)
+</code></pre>
+
+<p>Then</p>
+
+<pre><code>cd ~/Code &amp;&amp; serve phpmyadmin.app /usr/share/phpmyadmin/
+</code></pre>
+
+<p>Finally, the following should be added to the hosts file on the main machine</p>
+
+<pre><code>127.0.0.1 phpmyadmin.app
+</code></pre>
+
+<p>Start the Homestead box with</p>
+
+<pre><code>vagrant up
+</code></pre>
+
+<p>The phpMyAdmin interface should now be available at <a href="http://phpmyadmin.app:8000/" title="phpMyAdmin">http://phpmyadmin.app:8000/</a>. The default username/password is homestead/secret.</p>
+
+<p>Laravel&rsquo;s homestead environment is now fully configured and ready for development.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Laravel as an Enterprise PHP Framework]]></title>
+    <link href="http://boldlycoding.com/blog/2015/02/06/laravel-as-an-enterprise-php-framework/"/>
+    <updated>2015-02-06T20:45:11-05:00</updated>
+    <id>http://boldlycoding.com/blog/2015/02/06/laravel-as-an-enterprise-php-framework</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<h2>Why Did I Start This?</h2>
+
+<p>As a senior project at Lock Haven University, I intend to study Laravel as an enterprise PHP framework. Frameworks claim to promote consistency, reduce repetition, simplify implementation, and speed development. I intend to evaluate these claims using knowledge gained from past internships and development experiences. I will conduct my evaluation by implementing a website using the Laravel framework and comparing the experience to past projects.</p>
+
+<h2>What is Laravel? </h2>
+
+<p><img class="right" src="/images/laravel.jpg" width="250" height="150" title="&lsquo;Laravl logo&rsquo; &lsquo;Laravel logo&rsquo;" >Laravel has come into popularity quite recently. Taylor Otwell initially released Laravel in 2012. As of November 2014, GitHub indicates that the Laravel framework is the most popular PHP project. During the development of Laravel, features were drawn from many other popular frameworks including Yii, ASP.NET MVC, Ruby on Rails, Sinatra, and CodeIgniter. Laravel is a MVC framework, with distinct PHP files for each component.</p>
+
+<h2>Laravel&rsquo;s Features</h2>
+
+<p>Laravel includes many features to speed the development process.</p>
+
+<ul>
+<li>MVC, as previously mentioned, it is a Model View Controller Framework</li>
+<li>Routing, to direct incoming requests to appropriate views</li>
+<li>Eloquent ORM, an objected oriented interface for DB tables</li>
+<li>Migrations, version control for databases</li>
+<li>Seeding, invokable scripts to inject test data</li>
+<li>Blade, a template engine that supports inheritance of layouts</li>
+</ul>
+
+
+<p>There are many other features beyond these, but this list includes some of the most notable items. Many of these features are reflected by the directory structure of the application (thus embracing simplicity).</p>
+
+<p><img class="center" src="/images/laravel_app_structure.png" width="420" height="340" title="Laravel directory structure" ></p>
+
+<p>There are directories to house the models, views, and controllers. The database migrations and seeders also reside in their own directories. In the root of the application directory, there is a routes PHP file. This file has all of the routing information for the website which routes requests to appropriate controllers. From conceptual to physical design, Laravel is geared towards development.</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[To Boldly Code...]]></title>
-  <link href="http://boldlycoding.com/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Capstone 2015 | To Boldly Code...]]></title>
+  <link href="http://boldlycoding.com/blog/categories/capstone-2015/atom.xml" rel="self"/>
   <link href="http://boldlycoding.com/"/>
   <updated>2015-02-11T02:08:17-05:00</updated>
   <id>http://boldlycoding.com/</id>
@@ -23,276 +23,6 @@
 
 <p>Twitter defines trends as those topics which are popular now, not topics which have been popular for a long period of time. During the course of my project thus far I have been tracking trends and making observations about them. One interesting observation about Twitter trends is to volatility of the trends. Trends change on a frequent basis, which suggests an instability of conversation on Twitter. It is also interesting to note the
 number of trends which are not of appreciable social, political or economic significance. From January to February 2015 trends included #ReplaceAMovieTitleWithGoat, #HappyBirthdayHarryStyles, #NationalPizzaDay, #RuinAFriendshipIn5Words and a number of other One Direction topics. The instability of trends and lack of politically, socially and economically trends does pose a problem for my project. To cope with this problem I have begun tracking trends every two minutes and reviewing the trends periodically. If a significant topic does begin to trends. I will be able to start tracking that trends and then analyse the related tweets. Twitter trends are also based on location. Twitter will tailor the trends displayed based on the location of the user. My project will focus on worldwide opinions and topics so this posed another temporary problem. The Twitter API allows for the acquisition of trends on a global scale. This list of trends is not influenced by any particular user&rsquo;s information or location. Overall, Trends tend to be very complex and will continue to shape the project towards it completion.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Laravel and the Database]]></title>
-    <link href="http://boldlycoding.com/blog/2015/02/10/laravel-and-the-database/"/>
-    <updated>2015-02-10T23:13:31-05:00</updated>
-    <id>http://boldlycoding.com/blog/2015/02/10/laravel-and-the-database</id>
-    <content type="html"><![CDATA[<!-- more -->
-
-
-<p>Even before web development, Laravel begins bringing improvements to database operations. To improve development, Laravel provides a query builder, the Eloquent ORM, Migrations and Seeding. Although all these tools may not cater perfectly to every scenario encountered, the benefits tend to outweigh costs encountered.</p>
-
-<h2>The Database Configuration</h2>
-
-<p>Before any specific features are discussed, it is useful to be aware of Laravel&rsquo;s database configuration. The database configuration file is location in app/config/database.php. Here the default database can be selected and other database conncetions can be specified. Laravel supports connection with MySQL, Postgres, SQLite, and SQL Server. This file also set that table where Laravel will store its migrations. All database configuration options should be placed in this file.</p>
-
-<h2>Laravel&rsquo;s Query Builder</h2>
-
-<p>Laravel&rsquo;s query builder tends to be as powerful as raw SQL. It also protects against SQL injection so string cleaning is not necessary. Another benefit of the query builder is the simplicity and cleanliness of the code. A select statement can be done with the following line</p>
-
-<pre><code>```
-$users = DB::table('users')-&gt;get();
-```
-</code></pre>
-
-<p>There is no need to specify a SQL string or have another call to run the query. The total number of characters is also reduced compared to the typical PHP/SQL implementation. All of the attributes are then accessed in the following fashion. This too is as simple as the select statement.</p>
-
-<pre><code>```
-foreach ($users as $user)
-{
-    var_dump($user-&gt;name);
-}
-```
-</code></pre>
-
-<p>A more advanced query may look like the follwing. It retains the simplicity of the former operations as well as the power of raw PHP/SQL.</p>
-
-<pre><code>```
-$users = DB::table('users')
-                -&gt;orderBy('name', 'desc')
-                -&gt;groupBy('count')
-                -&gt;having('count', '&gt;', 100)
-                -&gt;get();
-```
-</code></pre>
-
-<p>The query builder also supports all of the other normal SQL functions, but all those will not be described here. One point where the query builder becomes somewhat more cumbersome than SQL is when an advanced where clause is needed. When such a clause is required, a closure must be used. A Laravel closure is an anonymous function used within another construct. The following shows an advanced where with a closure</p>
-
-<pre><code>```
-DB::table('users')
-        -&gt;where('name', '=', 'John')
-        -&gt;orWhere(function($query)
-        {
-            $query-&gt;where('votes', '&gt;', 100)
-                  -&gt;where('title', '&lt;&gt;', 'Admin');
-        })
-        -&gt;get();
-```
-</code></pre>
-
-<p>Overall, the query builder is much more organized than using raw PHP/SQL. Since everything is also implemented using OO concepts, mistakes are much less common. Operations will only be supported if they are valid for the current object in use. However, this the most basic way to interact with a database under the Laravel framework. The Eloquent ORM is much more advanced and provide more capabilities.</p>
-
-<h2>Eloquent ORM</h2>
-
-<p>Eloquent ORM is Laravel&rsquo;s implementation of an Active Record system. All tables in the database are tied to Models, so all table can be interacted with as objects. All models should be housed in the app/models directory. A basic sample model would look like the following</p>
-
-<pre><code>```
-class Vendor extends Model {
-
-    protected $table = 'Vendor';
-
-    public function product()
-    {   
-        return $this-&gt;hasMany('Product', 'product_id');
-    }
-
-}       
-```
-</code></pre>
-
-<p>This is a basic model for Vendors and the relationship with Products is implemented with the hasMany function.</p>
-
-<p>Then to interact with the model, this statement could be used</p>
-
-<pre><code>```
-$vendors = Vendor::all();
-```
-</code></pre>
-
-<p>This returns all of the users in the form of objects. The attributes are retrieved in the same was as with the query builder. Although it retains the organization of the query builder, Eloquent ORM does not cater well to complex queries. I found myself frequently using elements of the basic query builder. Eloquent makes up for this with its relationship evaluation. Referencing the previous example, after getting the vendors, the products can be iterated over without any other queries. In Laravel this is called a dynamic property and is a huge advantage of the framework.</p>
-
-<h2>Migrations</h2>
-
-<p>One of the most useful database tools offered by Laravel is the migration. Laravel migration are version control for the database. When a change must be made to the database, a new migration is created. All migration have an up and down method that are run for migrate and rollback respectively. After editing the migration, all migration can be run with</p>
-
-<pre><code>```
-php artisan migrate
-```
-</code></pre>
-
-<p>This is like pushing a series of commits with git.</p>
-
-<p>To roll back run</p>
-
-<pre><code>```
-php artisan migrate:rollback
-```
-</code></pre>
-
-<p>Migrations can be used to create the database and keep track of call changes that occur over the lifetime of a project. If a problem is encountered a roll back can be issued and another can be created to remedy the problem.</p>
-
-<h2>Seeding</h2>
-
-<p>Seeding is another useful feature Laravel provides although not extremely innovative. Seeding can be accomplished with a simple PHP script. Laravel does not provide any truly innovative or extremely capability. It is however useful for organization purposes to have to migrations and seeding script location in one place. it avoids the problem of dispersing scripts and functions across a webserver which happens with many projects. A typical migration consists of the following</p>
-
-<pre><code>```
-class UserTableSeeder extends Seeder {
-
-    public function run()
-    {
-        DB::table('users')-&gt;delete();
-
-        User::create(array('email' =&gt; 'foo@bar.com'));
-    }
-
-}
-```
-</code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Setting Up the Development Environment]]></title>
-    <link href="http://boldlycoding.com/blog/2015/02/10/setting-up-the-development-environment/"/>
-    <updated>2015-02-10T20:21:10-05:00</updated>
-    <id>http://boldlycoding.com/blog/2015/02/10/setting-up-the-development-environment</id>
-    <content type="html"><![CDATA[<!-- more -->
-
-
-<h2>What is the Homestead and Vagrant?</h2>
-
-<p>Homestead and Vagrant are two separate products the aid the development of Laravel applications. Before Homestead is discussed in detail, it is useful to have an understanding of Vagrant.</p>
-
-<p>Vagrant is used to automate and simplify the construction of development environments that are portable, lightweight and easy to duplicate. Normally the process of setting up a development environment consists of creating a virtual disk, mounting an ISO, going through an OS installation and installing all required packages (This process frequently needs to be done more than once given how unstable certain development environment are). Vagrant&rsquo;s pre-built environment are known as <em>boxes</em>. After a box is added to the local vagrant installation and started it supports operations including SSH, folder syncing, and web host setup. With vagrant, boxes are downloaded with all the setup done in advance. The box is added to vagrant via command line and the <em>up</em> command is called. The process is much shorter and many degrees simpler then the normal process without vagrant. Since boxes are downloaded already set up, this also creates identical environments if multiple developers are involved on a project. Developing a project in identical environments create code that is much more stable and likely to run in a production environment (If the development environment is similar to that of production). Now that a basic understanding of Vagrant has been established, the Homestead can be discussed.</p>
-
-<p>The Homestead is a Vagrant box produced by Taylor Otwell, the creator of Laravel. Since the Homestead was created by the &ldquo;creator,&rdquo; it is much more stable and well suited to Laravel development than a ordinary setup. Less configuration is all required since much of that has been done already. The Homestead includes Ubuntu 14.04, PHP, Nginx web server, and MySQL, configured and ready for development from startup (There are other included software packages but these are the most notable for my project).</p>
-
-<h2>Installing the Homestead</h2>
-
-<ol>
-<li><p>To use the Homestead, <a href="https://www.virtualbox.org/wiki/Downloads" title="Install VirtualBox">VirtualBox</a> and <a href="http://www.vagrantup.com/downloads.html" title="Install Vagrant">Vagrant</a> must be installed.</p></li>
-<li><p>Next, the Laravel Homestead box must be added to the local vagrant installation. This is done with the following command</p></li>
-</ol>
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>vagrant box add laravel/homestead</span></code></pre></td></tr></table></div></figure>
-
-
-<ol>
-<li>Following the download of the Homestead box, the Homestead CLI to start, stop, and modify the Homestead box must be installed. This can be done with composer and PHP or by cloning the git repo. I do not like to have a PHP installation running on my local machine, so I insatlled it via the git repo. To clone the repo use the following command (Be sure to clone the repo to a central location where most laraval applications can be found)</li>
-</ol>
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>git clone https://github.com/laravel/homestead.git Homestead</span></code></pre></td></tr></table></div></figure>
-
-
-<p>To create the Homestead configuration file, run (The file Homestead.yaml will be created in ~/.homestead)</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>bash init.sh</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Next the SSH key must be set up using the ssh-keygen command. I selected the default file name and path so the Homestead.yaml file would not need to be edited.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ssh-keygen -t rsa -C "gmcdaid@homestead"</span></code></pre></td></tr></table></div></figure>
-
-
-<p>After configuring the SSH Key, shared folders need to be set up. Shared folder are shared between the OS and Vagrant Box. A change made on the local file system will be instantly reflected in that of the Vagrant Box. This is a very useful feature included in the Vagrant work flow. To configure folder sharing, edit the Homestead.yaml file to reflect something like the following (The mapping is from the local machine to the vagrant box)</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>folders:
-</span><span class='line'>    - map: C:\\laravel\\code
-</span><span class='line'>      to: /home/vagrant/Code/</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now, sites for the Homestead need to be configured. Sites operate much like Virtual Hosts with Apache. Specified URLs get mapped to a particular directory on the filsystem. When a request is made to a URL the web server on the Homestead box will server pages in the specified directory. Mapping for sites is similar to mapping for folders</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>sites:
-</span><span class='line'>    - map: homestead.app
-</span><span class='line'>      to: /home/vagrant/Code/laravel/public</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Both sites and folders can have multiple entries. And something found in folders does not need to be in sites. If PHP scripts need to be run but not in a web browser, a folder mapping can be created without a site map.</p>
-
-<p>The only software package not included in the Homstead which is necessary to my personal work flow is phpMyAdmin. Luckily, it was not hard to install. (The install process assumes Laravel projects are in /home/vagrant/Code)</p>
-
-<p>First run</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>sudo apt-get install phpmyadmin (Do not select apache or lighttpd, just continue)</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Then</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cd ~/Code && serve phpmyadmin.app /usr/share/phpmyadmin/</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Finally, the following should be added to the hosts file on the main machine</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>127.0.0.1 phpmyadmin.app</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Start the Homestead box with</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>vagrant up</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The phpMyAdmin interface should now be available at <a href="http://phpmyadmin.app:8000/" title="phpMyAdmin">http://phpmyadmin.app:8000/</a>. The default username/password is homestead/secret.</p>
-
-<p>Laravel&rsquo;s homestead environment is now fully configured and ready for development.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Laravel as an Enterprise PHP Framework]]></title>
-    <link href="http://boldlycoding.com/blog/2015/02/06/laravel-as-an-enterprise-php-framework/"/>
-    <updated>2015-02-06T20:45:11-05:00</updated>
-    <id>http://boldlycoding.com/blog/2015/02/06/laravel-as-an-enterprise-php-framework</id>
-    <content type="html"><![CDATA[<!-- more -->
-
-
-<h2>Why Did I Start This?</h2>
-
-<p>As a senior project at Lock Haven University, I intend to study Laravel as an enterprise PHP framework. Frameworks claim to promote consistency, reduce repetition, simplify implementation, and speed development. I intend to evaluate these claims using knowledge gained from past internships and development experiences. I will conduct my evaluation by implementing a website using the Laravel framework and comparing the experience to past projects.</p>
-
-<h2>What is Laravel? </h2>
-
-<p><img class="right" src="http://boldlycoding.com/images/laravel.jpg" width="250" height="150" title="Laravl logo" alt="Laravel logo">Laravel has come into popularity quite recently. Taylor Otwell initially released Laravel in 2012. As of November 2014, GitHub indicates that the Laravel framework is the most popular PHP project. During the development of Laravel, features were drawn from many other popular frameworks including Yii, ASP.NET MVC, Ruby on Rails, Sinatra, and CodeIgniter. Laravel is a MVC framework, with distinct PHP files for each component.</p>
-
-<h2>Laravel&rsquo;s Features</h2>
-
-<p>Laravel includes many features to speed the development process.</p>
-
-<ul>
-<li>MVC, as previously mentioned, it is a Model View Controller Framework</li>
-<li>Routing, to direct incoming requests to appropriate views</li>
-<li>Eloquent ORM, an objected oriented interface for DB tables</li>
-<li>Migrations, version control for databases</li>
-<li>Seeding, invokable scripts to inject test data</li>
-<li>Blade, a template engine that supports inheritance of layouts</li>
-</ul>
-
-
-<p>There are many other features beyond these, but this list includes some of the most notable items. Many of these features are reflected by the directory structure of the application (thus embracing simplicity).</p>
-
-<p><img class="center" src="http://boldlycoding.com/images/laravel_app_structure.png" width="420" height="340" title="Laravel directory structure" ></p>
-
-<p>There are directories to house the models, views, and controllers. The database migrations and seeders also reside in their own directories. In the root of the application directory, there is a routes PHP file. This file has all of the routing information for the website which routes requests to appropriate controllers. From conceptual to physical design, Laravel is geared towards development.</p>
 ]]></content>
   </entry>
   
@@ -326,12 +56,12 @@ class UserTableSeeder extends Seeder {
 </code></pre></li>
 <li><p>If the installation was started correctly, it should display what is shown in the screenshot below. Select <em>Next</em> to continue.</p>
 
-<p> <img class="center" src="http://boldlycoding.com/images/cm/3_start.PNG" width="550" height="750" title="Select next" ></p></li>
+<p> <img class="center" src="/images/cm/3_start.PNG" width="550" height="750" title="Select next" ></p></li>
 <li><p>Accept the Cloudera license</p></li>
 <li><p>Accept the Oracle binary license. The installer will proceed to install the Cloudera repository, gather files, and install the JDK followed by Cloudera Manager Server. Have patience as the installation can take some time.</p></li>
 <li><p>When the installer finishes, it will indicate to open a web browser and navigate to the following url: <a href="http://localhost:7180/">http://localhost:7180/</a> The default username is <strong>admin</strong> and the password is <strong>admin</strong>. Open a web browser and use a url that will connect to the appropriate node in the cluster. After logging in, the installation will continue.</p>
 
-<p> <img class="center" src="http://boldlycoding.com/images/cm/6_browser.PNG" width="550" height="750" title="Open a web browser" ></p></li>
+<p> <img class="center" src="/images/cm/6_browser.PNG" width="550" height="750" title="Open a web browser" ></p></li>
 <li><p>After signing in, the CM installer will displays a comparison of the different versions. Cloudera Express supports the goals of my project, if Enterprise is selected a trial will be provided for 60 days and then all features will return to the level of Cloudera Express. After reviewing the offerings, click your desired offering and then click continue.</p></li>
 <li><p>CM displays the services available, click continue.</p></li>
 <li><p>Now, all the nodes in the cluster will need to be selected. To select hosts, patterns are supported. Supported patters include</p>
@@ -348,25 +78,25 @@ class UserTableSeeder extends Seeder {
 
 <p> If hosts are successfully found CM should display the following after clicking search</p>
 
-<p> <img class="center" src="http://boldlycoding.com/images/cm/9_hosts.PNG" width="550" height="750" title="Hosts were found" ></p>
+<p> <img class="center" src="/images/cm/9_hosts.PNG" width="550" height="750" title="Hosts were found" ></p>
 
 <p> If all the hosts were found, click continue, otherwise check the entered pattern/hostnames before continuing.</p></li>
 <li><p>The CM installer will now confirm repository options, the defaults should be appropriate, so just click Continue.</p>
 
-<p><img class="center" src="http://boldlycoding.com/images/cm/10_repo.PNG" width="550" height="750" title="Hosts were found" ></p></li>
+<p><img class="center" src="/images/cm/10_repo.PNG" width="550" height="750" title="Hosts were found" ></p></li>
 <li><p>Next, the installer displays the Oracle license for the JDK. Click the check box at the bottom and then click Continue. Unless needed, the check box for Java Unlimited Strength Encryption Policy files does not need to be checked.</p></li>
 <li><p>The installer will now ask if services should be installed in single user mode. To simplify the installation, <strong>do not</strong> click the check box and just click continue.</p></li>
 <li><p>The installer will now need root SSH credentials. Ensure that root access via SSH on all hosts is possible and enter the appropriate credentials and port number. To simplify my own installation process, I have configured all root passwords in the cluster to be the same.</p>
 
-<p><img class="center" src="http://boldlycoding.com/images/cm/13_ssh.PNG" width="550" height="750" title="Enter SSH info" ></p>
+<p><img class="center" src="/images/cm/13_ssh.PNG" width="550" height="750" title="Enter SSH info" ></p>
 
 <p>After clicking continue, the installer will write needed files to all hosts in the cluster.</p></li>
 <li><p>After the files have been written, the installer will indicate that operations have completed successfully. Click continue. If problems were encountered, an attempt to remove CM can be made and the installation restarted.</p>
 
-<p><img class="center" src="http://boldlycoding.com/images/cm/14_cis.PNG" width="550" height="750" title="Cluster install successful" ></p></li>
+<p><img class="center" src="/images/cm/14_cis.PNG" width="550" height="750" title="Cluster install successful" ></p></li>
 <li><p>CM will now download, distribute and activate parcels on all hosts. After this process is complete, click Continue.</p>
 
-<p><img class="center" src="http://boldlycoding.com/images/cm/15_parcel.PNG" width="550" height="750" title="Completed parcel distribution" ></p></li>
+<p><img class="center" src="/images/cm/15_parcel.PNG" width="550" height="750" title="Completed parcel distribution" ></p></li>
 <li><p>Finally, CM will inspect all the hosts in the cluster. I do not recommend skipping this step. It will check for many common problems. If any are found, correct them. Otherwise, click finish to complete the CM installation.</p></li>
 <li><p>Now CDH 5 services need to be selected. For my project I required HDFS, Hive, Hue (A great web interface for Hadoop administration) and YARN (Oozie will also be installed since Hue requires it). To install this subset of services, click the Custom Services radio button. Select the aforementioned services, and click Continue.</p></li>
 <li><p>Cloudera Manager will next require that all roles in the cluster be delegated to nodes in the cluster. The master of the cluster should run all services except the HDFS DataNode and the YARN NodeManager. This would not be done in a production cluster as it would degrade performance of the services, but it is suitable for a test cluster. Ensure the master is also running the Cloudera Management Service, this was not selected to run on any nodes during my installation, but the ACtivity Monitor is a useful service to have running. After correctly delegating all the service to the nodes, click Continue.</p></li>
@@ -602,9 +332,8 @@ cat /var/log/mysql/error.log
 
 <p>To list all the backup jobs that have been executed use from the Bacula console</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>list jobs</span></code></pre></td></tr></table></div></figure>
-
+<pre><code>list jobs
+</code></pre>
 
 <ol>
 <li><p>To restore all the files automatically type</p>
@@ -691,38 +420,38 @@ cat /var/log/mysql/error.log
 <li><p>Start the OS installation and configure appropriate regional settings including language and keyboard layout.</p></li>
 <li><p>The installation will ask for a hostname. All machines in the cluster should have a unique hostname. In my cluster I configured the machines as typhlosion, quilava and cyndaquil where typhlosion is the master of the cluster and the other two machines are slaves.</p>
 
-<p> <img class="center" src="http://boldlycoding.com/images/os/3_hostname.png" width="550" height="750" title="Set up each host with an appropiate hostname" ></p></li>
+<p> <img class="center" src="/images/os/3_hostname.png" width="550" height="750" title="Set up each host with an appropiate hostname" ></p></li>
 <li><p>The Ubuntu installation will then prompt for a username.</p>
 
-<p> <img class="center" src="http://boldlycoding.com/images/os/4_username.png" width="550" height="750" title="Enter an appropriate username" ></p></li>
+<p> <img class="center" src="/images/os/4_username.png" width="550" height="750" title="Enter an appropriate username" ></p></li>
 <li><p>Enter and verify a memorable password.</p>
 
-<p> <img class="center" src="http://boldlycoding.com/images/os/5_password.PNG" width="550" height="750" title="Enter an appropriate password" ></p></li>
+<p> <img class="center" src="/images/os/5_password.PNG" width="550" height="750" title="Enter an appropriate password" ></p></li>
 <li><p>For my project, I chose not to encrypt my home directory.</p>
 
-<p> <img class="center" src="http://boldlycoding.com/images/os/6_encrypt.PNG" width="550" height="750" title="Encrypt your directory?" ></p></li>
+<p> <img class="center" src="/images/os/6_encrypt.PNG" width="550" height="750" title="Encrypt your directory?" ></p></li>
 <li><p>An appropiate time zone should then be selected. I have seen references to problem occurring with CDH/Cloudera Manager when configuration options related to time are not set correctly, so ensure the correct time zone is selected on all machines in the cluster.</p>
 
-<p> <img class="center" src="http://boldlycoding.com/images/os/7_timezone.PNG" width="550" height="750" title="Set and appropiate time zone" ></p></li>
+<p> <img class="center" src="/images/os/7_timezone.PNG" width="550" height="750" title="Set and appropiate time zone" ></p></li>
 <li><p>On the cluster machines, I elected to use the entire disk without LVM for simplicity&rsquo;s sake. Following this step you will need to confirm the disk to partition.</p>
 
-<p> <img class="center" src="http://boldlycoding.com/images/os/8_lvm.PNG" width="550" height="750" title="Use LVM?" ></p></li>
+<p> <img class="center" src="/images/os/8_lvm.PNG" width="550" height="750" title="Use LVM?" ></p></li>
 <li><p>Finally, the installation will confirm and then write all changes to disk. Assuming everything on your screen is correct, select yes and wait for the files to be written.</p>
 
-<p> <img class="center" src="http://boldlycoding.com/images/os/9_write.PNG" width="550" height="750" title="Write changes to disk" ></p></li>
+<p> <img class="center" src="/images/os/9_write.PNG" width="550" height="750" title="Write changes to disk" ></p></li>
 <li><p>Following a lengthy file write, the installation will ask about an HTTP proxy. This was not required for my set up and thus I left the field blank. The installation will then continue writing files.</p></li>
 <li><p>The installation now asks about Automatic Updating. Like many tech envoinments where change is not tolerated, Cloudera Manager and Hadoop are no different. Hadoop particularly does not deal well with changes in its environment. Keeping this in mind I selected no automatic updating to use my own discretion, and the installation continued.</p>
 
-<p><img class="center" src="http://boldlycoding.com/images/os/11_updates.PNG" width="550" height="750" title="No updates!" ></p></li>
+<p><img class="center" src="/images/os/11_updates.PNG" width="550" height="750" title="No updates!" ></p></li>
 <li><p>Next, software needs to be selected for installation. The spacebar is used for selection and enter confirms selections. The selections will differ based on the type of cluster node. The OpenSSH server <strong>must</strong> be installed on <strong>all</strong> nodes in the cluster. Cloudera Manager and Hadoop use SSH. The LAMP server package should be installed on the master of the cluster (typhlosion in my case) if, like myself, MySQL is more appealing than a PostgreSQL database. Cloudera Manager can store all of its data in a MySQL database and the backup agent Bacula (to be described later) requires a MySQL installation. The slaves of the cluster do not require LAMP to be installed but if more then one of the components are needed, it is not a bad idea to install those now. For my cluster, I only need MySQL on the slaves, so I install that separately to reduce the number of extraneous services. Of course, if any of the other listed components are needed, they should be selected for installation now.</p>
 
-<p><img class="center" src="http://boldlycoding.com/images/os/12_software.PNG" width="550" height="750" title="Software selection" ></p></li>
+<p><img class="center" src="/images/os/12_software.PNG" width="550" height="750" title="Software selection" ></p></li>
 <li><p>If installing MySQL, the installation will display a prompt for a root user password. In this test cluster, I use the same password for all services to simplify the setup process. After entering the password, the installer will request confirmation and then continue writing files.</p>
 
-<p><img class="center" src="http://boldlycoding.com/images/os/13_mysqlpassword.PNG" width="550" height="750" title="Enter a MySQL password" ></p></li>
+<p><img class="center" src="/images/os/13_mysqlpassword.PNG" width="550" height="750" title="Enter a MySQL password" ></p></li>
 <li><p>Finally, assuming no other OS is detected, select Yes and GRUB will be installed directly to the MBR. I do not recommend running multiple operating systems in a server environment. After GRUB is written the installation will complete and the machine will reboot after Continue is selected.</p>
 
-<p><img class="center" src="http://boldlycoding.com/images/os/14_grub.PNG" width="550" height="750" title="Install GRUB" ></p></li>
+<p><img class="center" src="/images/os/14_grub.PNG" width="550" height="750" title="Install GRUB" ></p></li>
 </ol>
 
 
