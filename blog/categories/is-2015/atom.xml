@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Is 2015 | To Boldly Code...]]></title>
   <link href="http://boldlycoding.com/blog/categories/is-2015/atom.xml" rel="self"/>
   <link href="http://boldlycoding.com/"/>
-  <updated>2015-02-11T02:08:17-05:00</updated>
+  <updated>2015-03-18T02:58:09-04:00</updated>
   <id>http://boldlycoding.com/</id>
   <author>
     <name><![CDATA[George McDaid]]></name>
@@ -12,6 +12,361 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Laravel and Advanced Routing to Controllers]]></title>
+    <link href="http://boldlycoding.com/blog/2015/03/13/laravel-and-advanced-routing-to-controllers/"/>
+    <updated>2015-03-13T03:08:01-04:00</updated>
+    <id>http://boldlycoding.com/blog/2015/03/13/laravel-and-advanced-routing-to-controllers</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<p>Following the previous discussion of routes and controllers, there are other constructs within the Laravel framework that are also worth noting.</p>
+
+<h2>Parameter Constraints</h2>
+
+<p>Laravel allows for constraints to be placed on route parameters, which were discussed in the previous post. Parameter constraints are more basic to type than route filters, but just as powerful. Route parameter constraints are implemented using regular expressions listed with an accompanying parameter name. Before a request is passed to the controller within a route function, the parameter must satisfy the regular expression.</p>
+
+<p>The first route must only be alphabetical, while the second must be numerical. Laravel will only dispatch a request to these routes if the parameter meets the regular expression.
+&#8220;`
+Route::get(&lsquo;user/{name}&rsquo;, function($name)
+{
+    //
+})
+->where(&lsquo;name&rsquo;, &lsquo;[A-Za-z]+&rsquo;);</p>
+
+<p>Route::get(&lsquo;user/{id}&rsquo;, function($id)
+{
+    //
+})
+->where(&lsquo;id&rsquo;, &lsquo;[0-9]+&rsquo;);
+&#8220;`</p>
+
+<p>The routes can also be combined and pass an array of constraints
+<code>
+Route::get('user/{id}/{name}', function($id, $name)
+{
+    //
+})
+-&gt;where(['id' =&gt; '[0-9]+', 'name' =&gt; '[a-z]+'])
+</code></p>
+
+<p>Although not this it is not found within the routing file, it is useful to note the <em>firstOrFail</em> and <em>findOrFail</em> functions here. These functions are used to find data within a table using an identifier, when the record is not found, an exception is thrown. This failure can then propagate up to a 404 error page, and no routing or redirection is needed within the controller. <em>findOrFail($id)</em> is used when the identifier being used is the primary key, <em>firstOrFail()</em> is used when the identifier is not the primary key.</p>
+
+<p>This function will fail if the content identifier does not exist. The error can be caught in the app&rsquo;s config file and a 404 view can be presented.
+&#8220;`
+public function getContent($content = null){
+    $view = View::make(&lsquo;content&rsquo;);</p>
+
+<pre><code>$content = Content::findOrFail($id);
+
+$view-&gt;with('content', $content);
+
+return $view;
+</code></pre>
+
+<p>}
+&#8220;`</p>
+
+<p>Another variation with the <em>firstOrFail</em> function, here the primary key is not used. The content URL is compared to other URLs in the database.
+&#8220;`
+public function getContent($url = null)
+{</p>
+
+<pre><code>    $view = View::make('content');
+
+    $content = Content::where('url', '=', $url)-&gt;firstOrFail();
+
+    $view-&gt;with('content', $content);
+
+    return $view;
+</code></pre>
+
+<p>}
+&#8220;`</p>
+
+<h2>Routing Groups</h2>
+
+<p>When a routing filter needs to be applied to multiple routes, it is useful to implement this as a route group. When routes are grouped, for an route within the group to be accessed, the filter must be satisfied. This is incredibly useful when creating pages that all require the user to be authenticated. A route group is setup in the following way</p>
+
+<pre><code>Route::group(array('before' =&gt; 'authed'), function()
+{
+    Route::get('/account/landing', array('as' =&gt; 'myprotech', 'uses' =&gt; 'AccountController@getLanding'));
+
+    Route::get('/account/courses', array('as' =&gt; 'student_courses', 'uses' =&gt; 'AccountController@getStudentCourses'));
+
+    Route::get('/account/student_account', array('as' =&gt; 'student_account', 'uses' =&gt; 'AccountController@getStudentAccount'));
+});
+
+Route::filter('authed', function()
+{
+    if (!Auth::check())
+    {
+        Session::flash('message', 'You must login to view this page.');
+        return Redirect::guest(route('display_login'));
+    }
+});
+</code></pre>
+
+<p>The route group accepts an array with the filter name(s) and a function that contains the routes. Within the routing group, to access any of the three routes, the <em>authed</em> filter must be satisfied, This filter checks to ensure the current user is logged in. If the user is not logged in, a message is flashed for the next session, and they are redirected to the login screen. Here the Redirect::guest function is used to when valid credentials are supplied, the user if logged in and they are redirected to their original destination. This is a very elegant solution to a common control structure, and simplifies site code.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Laravel Routing and Controllers]]></title>
+    <link href="http://boldlycoding.com/blog/2015/02/27/laravel-routing-and-controllers/"/>
+    <updated>2015-02-27T22:33:01-05:00</updated>
+    <id>http://boldlycoding.com/blog/2015/02/27/laravel-routing-and-controllers</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<h2>Routing</h2>
+
+<p>Routing in Laravel is the process of taking HTTP requests, like GET and POST, taking the appropiate action. This is frequently routing the request to a controller. Laravel houses route definitions in</p>
+
+<pre><code>app/routes.php
+</code></pre>
+
+<p>Routes in this file can respond to one, many, or all HTTP request verbs.</p>
+
+<p>This would respond to POST:</p>
+
+<pre><code>Route::post('/', function()
+{
+    return 'POST: Hello World';
+});
+</code></pre>
+
+<p>This route responds to GET and POST:</p>
+
+<pre><code>Route::match(array('GET', 'POST'), '/', function()
+{
+    return 'GET &amp; POST: Hello World';
+});
+</code></pre>
+
+<p>These two previous route examples do not register names with the route handlers. This makes it slightly less easy to refer to the routes in view, to create URLs. It is a beneficial practice to always associative a name with a declared route. To declare a named route in Laravel</p>
+
+<pre><code>Route::get('/account/my_account', array('as' =&gt; 'my_account', function()
+{
+    return 'GET "my_account" route: Hello World';
+}));
+</code></pre>
+
+<p>This route responds to the GET verb for requests to /account/my_account. The route can be referred to with the following in views to create URLs that would link to the named route</p>
+
+<pre><code>URL::route('my_account');
+</code></pre>
+
+<p>Although all these basic routes have their uses, often URL parameters are required for the effective operation of a page. A route with a parameter is declared as</p>
+
+<pre><code>Route::get('/account/my_account/{id}', array('as' =&gt; 'my_account', function()
+{
+    return 'GET "my_account" route: ' . $id;
+}));
+</code></pre>
+
+<p>This route requires the request have an id parameter. A parameter is optional if followed by a &lsquo;?&rsquo;. In this case there was no question mark after if, so the parameter is required.</p>
+
+<p>One other useful construct that can be attached to routes is the filter. Filters allow preprocessing of a HTTP request before it gets routed to a particular location, like a controller. This is useful for processes like authentication checks. To declare a filter that would check if the user is authenticated</p>
+
+<pre><code>Route::filter('auth', function()
+{
+    if (!Auth::user())
+    {
+        return Redirect::to('sign_in');
+    }
+});
+</code></pre>
+
+<p>This filter can then be applied to a route</p>
+
+<pre><code>Route::get('my_account', array('before' =&gt; 'auth', function()
+{
+    return 'Account Info';
+}));
+</code></pre>
+
+<p>When the filter is applied to that route, it will ensure that all users accessing the my_account page are logged in. If the user is not logged in, they are redirected to the sign_in page.</p>
+
+<p>All of the previously detailed routes had string or route returns, it is much more common to have routes that direct to controllers.</p>
+
+<h2>Controllers</h2>
+
+<p>Controllers in Laravel function similarly to controllers in other MVC structures. They get data from the model (the database), process this data, and the pass it to a Laravel view. The controller may also do other preliminary processing like user authentication or key validation. The first step to using a Laravel controller is declaring a route to the controller</p>
+
+<pre><code>Route::get('/', array('as' =&gt; 'home', 'uses' =&gt; 'HomeController@getIndex'));
+</code></pre>
+
+<p>This is a basic example that declares a named route &lsquo;home&rsquo; that responds to all GET requests to the index page and routes them to the getIndex method in the HomeController. After declaring this route the HomeController file should be created in the app/controllers directory. An appropiate controller would look something like the following</p>
+
+<pre><code>&lt;?php
+
+class HomeController extends BaseController {
+
+    public function getIndex()
+    {
+
+            $view = View::make('home');
+
+            return $view;
+
+    }
+
+}
+
+?&gt;
+</code></pre>
+
+<p>This controller contains the needed getIndex method and in this method the &lsquo;home&rsquo; view is created and returned. A more advanced method may include a database call</p>
+
+<pre><code>public function getIndex()
+    {
+
+            $view = View::make('home');
+
+            $content = Content::where('display', '=', 1)-&gt;get();
+            $view-&gt;with('content', $content);
+
+            return $view;
+
+    }
+</code></pre>
+
+<p>The get index method now queries the database for all content that should be displayed. The data is passed to the created view using the &lsquo;with&rsquo; method. The first parameter is the variable name the view will use to refer to the data and the second parameter is the data itself. A more advanced view would include many more methods to handle several associated request. An account controller could have sign in, sign out, get sign in page, and get account methods.</p>
+
+<p>Another useful construct that can be inserted into controller methods in the Redirect. Redirects do just what their name says, redirected. One possible use case is redirection after authentication.</p>
+
+<pre><code>public function postSignIn(){
+    $email = Input::get('email');
+    $password = Input::get('password');
+
+    if (Auth::attempt(array('email' =&gt; $email, 'password' =&gt; $password)))
+    {
+        Session::flash('message', 'You have been logged in.');
+        return Redirect::intended(route('home'));
+    }
+
+    Session::flash('message', 'Your credentials are invalid.');
+    return Redirect::to(route('display_login'));
+}
+</code></pre>
+
+<p>These are the structures that I found most useful for my project. I valued the control found with explicitly defining routes to controllers. Laravel offers many other variation and tools with controller that are detailed <a href="http://laravel.com/docs/4.2/controllers" title="Laravel Controllers">here</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Laravel and Blade]]></title>
+    <link href="http://boldlycoding.com/blog/2015/02/16/laravel-and-blade/"/>
+    <updated>2015-02-16T13:38:10-05:00</updated>
+    <id>http://boldlycoding.com/blog/2015/02/16/laravel-and-blade</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<h2>What is Blade?</h2>
+
+<p>Blade is a template engine that comes with the Laravel framework. Blade is incredibly useful because it provides control structures, layout inheritance, and function definitions. The control structures keep to code simple, but retain the power of raw PHP control structures.</p>
+
+<h2>How to use it.</h2>
+
+<p>The simplest Blade structure allow for the echoing of information. In addition to echoing the information, Laravel escapes the content to prevent malicious code execution. With raw PHP, the opening and closing tags would be needed in addition to a function call for output cleaning. The blade syntax is</p>
+
+<p>{% raw %}
+<code>
+Blade content {{ $content }}
+</code>
+{% endraw %}</p>
+
+<p>Blade allows for extension of this syntax with existence checking. This becomes very useful when outputting content from a database. If there are nulls or empty strings, the defined string will be output.</p>
+
+<p>{% raw %}
+<code>
+{{ isset($content) ? $content : 'No Content' }}
+</code>
+{% endraw %}</p>
+
+<p>Beyond these simple structures, Blade provides support for more advanced control structures like if statements and loops. To construct an if statement (and declare other Blade keywords), the @ symbol us used</p>
+
+<pre><code>@if ($fish == "1")
+    One Fish
+@elseif ($fish == "2")
+    Two Fish
+@elseif ($fish == "red")
+    Red Fish
+@elseif ($fish == "blue")
+    Blue Fish
+@else
+    Not a fish
+@endif
+</code></pre>
+
+<p>Blade also provide support for for, foreach, forelse, and while loops. The foreach loop is frequently used after fetching information from the database to output it to the user.</p>
+
+<p>{% raw %}
+<code>
+@foreach ($all_fish as fish)
+    &lt;p&gt;{{ $fish-&gt;type }} Fish&lt;/p&gt;
+@endforeach
+</code>
+{% endraw %}</p>
+
+<p>Although no significant additional functionality is provided, the blade structures ensure the code remains clean and readable. This will improve debug time and improvements and maintenance in the future.</p>
+
+<p>Blade is also very powerful because it provides support for inheritance of layouts. For instance, a a base layout could be defined with all the basic information. The HTML tags, head tags, style information needed for all pages, and anything else that can be included for all pages. This base layout can be included in other layouts, moreover content can be injected from the child to the parent layout. A base layout could be defined, another layout for generic content pages and additional layouts for specialized content all injecting content into the base layout and inheriting its structure.</p>
+
+<p>The parent layout
+{% raw %}
+&#8220;`</p>
+
+<!-- views/layouts/base.blade.php -->
+
+
+<p><html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="style_default.css">
+        @yield(&lsquo;css&rsquo;)
+    </head>
+    <body>
+        <div class="container">
+            @yield(&lsquo;content&rsquo;)
+        </div>
+    </body>
+</html>
+&#8220;`
+{% endraw %}</p>
+
+<p>A child layout
+{% raw %}
+&#8220;`
+@extends(&lsquo;base.master&rsquo;)</p>
+
+<p>@section(&lsquo;css&rsquo;)
+    <link rel="stylesheet" type="text/css" href="special_styles.css">
+@stop</p>
+
+<p>@section(&lsquo;content&rsquo;)
+    <p>This is my body content.</p>
+@stop
+&#8220;`
+{% endraw %}</p>
+
+<p>Finally, Blade support definition of custom function in the same way a function can be defined in PHP. The defined function is access using the @ sign, like when using other Blade keywords. This is very useful when defined common formatting or output procedures, like formatting a MySQL DATETIME for output to the user. The following piece of code will take a date/time input and convert it to a date formatted as a two digit month, a slash, and then the two digit day.</p>
+
+<p>{% raw %}
+&#8220;`
+Blade::extend(function($view, $compiler)
+{
+    $pattern = $compiler->createMatcher(&lsquo;datetime&rsquo;);</p>
+
+<pre><code>return preg_replace($pattern, '$1&lt;?php echo $2-&gt;format(\'m/d\'); ?&gt;', $view);
+</code></pre>
+
+<p>});
+&#8220;`
+{% endraw %}</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Laravel and the Database]]></title>
@@ -33,24 +388,17 @@
 
 <pre><code>```
 $users = DB::table('users')-&gt;get();
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/code&gt;&lt;/pre&gt;
-</span><span class='line'>
-</span><span class='line'>&lt;p&gt;There is no need to specify a SQL string or have another call to run the query. The total number of characters is also reduced compared to the typical PHP/SQL implementation. All of the attributes are then accessed in the following fashion. This too is as simple as the select statement.&lt;/p&gt;
-</span><span class='line'>
-</span><span class='line'>&lt;pre&gt;&lt;code&gt;```
-</span><span class='line'>foreach ($users as $user)
-</span><span class='line'>{
-</span><span class='line'>    var_dump($user-&gt;name);
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+```
+</code></pre>
+
+<p>There is no need to specify a SQL string or have another call to run the query. The total number of characters is also reduced compared to the typical PHP/SQL implementation. All of the attributes are then accessed in the following fashion. This too is as simple as the select statement.</p>
+
+<pre><code>```
+foreach ($users as $user)
+{
+    var_dump($user-&gt;name);
+}
+```
 </code></pre>
 
 <p>A more advanced query may look like the follwing. It retains the simplicity of the former operations as well as the power of raw PHP/SQL.</p>
@@ -61,32 +409,21 @@ $users = DB::table('users')
                 -&gt;groupBy('count')
                 -&gt;having('count', '&gt;', 100)
                 -&gt;get();
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/code&gt;&lt;/pre&gt;
-</span><span class='line'>
-</span><span class='line'>&lt;p&gt;The query builder also supports all of the other normal SQL functions, but all those will not be described here. One point where the query builder becomes somewhat more cumbersome than SQL is when an advanced where clause is needed. When such a clause is required, a closure must be used. A Laravel closure is an anonymous function used within another construct. The following shows an advanced where with a closure&lt;/p&gt;
-</span><span class='line'>
-</span><span class='line'>&lt;pre&gt;&lt;code&gt;```
-</span><span class='line'>DB::table('users')
-</span><span class='line'>        -&gt;where('name', '=', 'John')
-</span><span class='line'>        -&gt;orWhere(function($query)
-</span><span class='line'>        {
-</span><span class='line'>            $query-&gt;where('votes', '&gt;', 100)
-</span><span class='line'>                  -&gt;where('title', '&lt;&gt;', 'Admin');
-</span><span class='line'>        })
-</span><span class='line'>        -&gt;get();</span></code></pre></td></tr></table></div></figure>
+```
+</code></pre>
+
+<p>The query builder also supports all of the other normal SQL functions, but all those will not be described here. One point where the query builder becomes somewhat more cumbersome than SQL is when an advanced where clause is needed. When such a clause is required, a closure must be used. A Laravel closure is an anonymous function used within another construct. The following shows an advanced where with a closure</p>
+
+<pre><code>```
+DB::table('users')
+        -&gt;where('name', '=', 'John')
+        -&gt;orWhere(function($query)
+        {
+            $query-&gt;where('votes', '&gt;', 100)
+                  -&gt;where('title', '&lt;&gt;', 'Admin');
+        })
+        -&gt;get();
+```
 </code></pre>
 
 <p>Overall, the query builder is much more organized than using raw PHP/SQL. Since everything is also implemented using OO concepts, mistakes are much less common. Operations will only be supported if they are valid for the current object in use. However, this the most basic way to interact with a database under the Laravel framework. The Eloquent ORM is much more advanced and provide more capabilities.</p>
@@ -106,22 +443,16 @@ class Vendor extends Model {
     }
 
 }       
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/code&gt;&lt;/pre&gt;
-</span><span class='line'>
-</span><span class='line'>&lt;p&gt;This is a basic model for Vendors and the relationship with Products is implemented with the hasMany function.&lt;/p&gt;
-</span><span class='line'>
-</span><span class='line'>&lt;p&gt;Then to interact with the model, this statement could be used&lt;/p&gt;
-</span><span class='line'>
-</span><span class='line'>&lt;pre&gt;&lt;code&gt;```
-</span><span class='line'>$vendors = Vendor::all();</span></code></pre></td></tr></table></div></figure>
+```
+</code></pre>
+
+<p>This is a basic model for Vendors and the relationship with Products is implemented with the hasMany function.</p>
+
+<p>Then to interact with the model, this statement could be used</p>
+
+<pre><code>```
+$vendors = Vendor::all();
+```
 </code></pre>
 
 <p>This returns all of the users in the form of objects. The attributes are retrieved in the same was as with the query builder. Although it retains the organization of the query builder, Eloquent ORM does not cater well to complex queries. I found myself frequently using elements of the basic query builder. Eloquent makes up for this with its relationship evaluation. Referencing the previous example, after getting the vendors, the products can be iterated over without any other queries. In Laravel this is called a dynamic property and is a huge advantage of the framework.</p>
@@ -132,22 +463,16 @@ class Vendor extends Model {
 
 <pre><code>```
 php artisan migrate
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/code&gt;&lt;/pre&gt;
-</span><span class='line'>
-</span><span class='line'>&lt;p&gt;This is like pushing a series of commits with git.&lt;/p&gt;
-</span><span class='line'>
-</span><span class='line'>&lt;p&gt;To roll back run&lt;/p&gt;
-</span><span class='line'>
-</span><span class='line'>&lt;pre&gt;&lt;code&gt;```
-</span><span class='line'>php artisan migrate:rollback</span></code></pre></td></tr></table></div></figure>
+```
+</code></pre>
+
+<p>This is like pushing a series of commits with git.</p>
+
+<p>To roll back run</p>
+
+<pre><code>```
+php artisan migrate:rollback
+```
 </code></pre>
 
 <p>Migrations can be used to create the database and keep track of call changes that occur over the lifetime of a project. If a problem is encountered a roll back can be issued and another can be created to remedy the problem.</p>
@@ -258,44 +583,6 @@ class UserTableSeeder extends Seeder {
 <p>The phpMyAdmin interface should now be available at <a href="http://phpmyadmin.app:8000/" title="phpMyAdmin">http://phpmyadmin.app:8000/</a>. The default username/password is homestead/secret.</p>
 
 <p>Laravel&rsquo;s homestead environment is now fully configured and ready for development.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Laravel as an Enterprise PHP Framework]]></title>
-    <link href="http://boldlycoding.com/blog/2015/02/06/laravel-as-an-enterprise-php-framework/"/>
-    <updated>2015-02-06T20:45:11-05:00</updated>
-    <id>http://boldlycoding.com/blog/2015/02/06/laravel-as-an-enterprise-php-framework</id>
-    <content type="html"><![CDATA[<!-- more -->
-
-
-<h2>Why Did I Start This?</h2>
-
-<p>As a senior project at Lock Haven University, I intend to study Laravel as an enterprise PHP framework. Frameworks claim to promote consistency, reduce repetition, simplify implementation, and speed development. I intend to evaluate these claims using knowledge gained from past internships and development experiences. I will conduct my evaluation by implementing a website using the Laravel framework and comparing the experience to past projects.</p>
-
-<h2>What is Laravel? </h2>
-
-<p><img class="right" src="/images/laravel.jpg" width="250" height="150" title="&lsquo;Laravl logo&rsquo; &lsquo;Laravel logo&rsquo;" >Laravel has come into popularity quite recently. Taylor Otwell initially released Laravel in 2012. As of November 2014, GitHub indicates that the Laravel framework is the most popular PHP project. During the development of Laravel, features were drawn from many other popular frameworks including Yii, ASP.NET MVC, Ruby on Rails, Sinatra, and CodeIgniter. Laravel is a MVC framework, with distinct PHP files for each component.</p>
-
-<h2>Laravel&rsquo;s Features</h2>
-
-<p>Laravel includes many features to speed the development process.</p>
-
-<ul>
-<li>MVC, as previously mentioned, it is a Model View Controller Framework</li>
-<li>Routing, to direct incoming requests to appropriate views</li>
-<li>Eloquent ORM, an objected oriented interface for DB tables</li>
-<li>Migrations, version control for databases</li>
-<li>Seeding, invokable scripts to inject test data</li>
-<li>Blade, a template engine that supports inheritance of layouts</li>
-</ul>
-
-
-<p>There are many other features beyond these, but this list includes some of the most notable items. Many of these features are reflected by the directory structure of the application (thus embracing simplicity).</p>
-
-<p><img class="center" src="/images/laravel_app_structure.png" width="420" height="340" title="Laravel directory structure" ></p>
-
-<p>There are directories to house the models, views, and controllers. The database migrations and seeders also reside in their own directories. In the root of the application directory, there is a routes PHP file. This file has all of the routing information for the website which routes requests to appropriate controllers. From conceptual to physical design, Laravel is geared towards development.</p>
 ]]></content>
   </entry>
   

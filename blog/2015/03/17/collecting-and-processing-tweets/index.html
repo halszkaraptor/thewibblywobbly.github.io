@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Collecting and Processing Tweets - To Boldly Code&#8230;</title>
+  <meta name="author" content="George McDaid">
+
+  
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://boldlycoding.com/blog/2015/03/17/collecting-and-processing-tweets">
+  <link href="/favicon.png" type="image/png" rel="icon">
+  <link href="/atom.xml" rel="alternate" title="To Boldly Code..." type="application/atom+xml">
+
+  <!-- http://opengraphprotocol.org/ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://boldlycoding.com/blog/2015/03/17/collecting-and-processing-tweets">
+  <meta property="og:title" content="Collecting and Processing Tweets - To Boldly Code...">
+  
+
+  <script src="/javascripts/libs/jquery/jquery-2.0.3.min.js"></script>
+
+<link href="http://bootswatch.com/cerulean/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+
+  
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+
+  
+   <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-28443557-2', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+
+
+</head>
+
+  <body   >
+    <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+    <div id="wrap">
+      <header role="banner">
+        <nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">To Boldly Code&#8230;</a>
+        </div>
+
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="active">
+                    <a rel="index" href="/">Blog</a>
+                </li>
+                <li >
+                    <a href="/blog/archives">Archives</a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                
+                    <li>
+                        <form class="search navbar-form navbar-right" action="https://www.google.com/search" method="GET">
+                            <input type="hidden" name="q" value="site:boldlycoding.com">
+                            <div class="form-group">
+                                <input class="form-control" type="text" name="q" placeholder="Search">
+                            </div>
+                        </form>
+                    </li>
+                
+                <li>
+                    <a class="subscribe-rss" href="/atom.xml" title="subscribe via RSS">
+                        <span class="visible-xs">RSS</span>
+                        <img class="hidden-xs" src="/images/rss.png" alt="RSS">
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+      </header>
+      <div id="main" role="main" class="container">
+        <div id="content">
+          <div>
+<article class="hentry" role="article">
+  
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+<time class='entry-date' datetime='2015-03-17T17:55:55-04:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:55 pm</span></time>
+        
+      </p>
+    
+    
+    <h1 class="entry-title" itemprop="name headline">
+        Collecting and Processing Tweets
+        
+    </h1>
+    
+  </header>
+
+
+<div class="entry-content clearfix" itemprop="articleBody description"><!-- more -->
+
+
+<p><img class="center" src="/images/tweet_process.png" width="1000" height="400" title="Tweet collection and processing" ></p>
+
+<h2>Collecting the Tweets</h2>
+
+<p>Tweet collection is driven the Apache project Flume. Flume collects, aggregates, and moves variable amounts of streaming data. The data can be from a variety of sources including server and other logs. Flume overall is very flexible and customisable based on the particular application. It not only support multiple sources, but also multiple processing mediums, or channels. Here channels are where the data in question is stored before being being written to its final destination, or sink. Flume captures data from a source, and stores it in a channel before finally writing the data to the sink. Channels can be in memory, in a file, or files, or a combination of the two. The logical structure of the source, channel and sink, is an agent. A flume agent that captures web server data and writes it to a Hadoop HDFs would logically look like the following</p>
+
+<p><img class="center" src="/images/flume_agent.png" width="540" height="440" title="A typical flume agent" ></p>
+
+<p>As discussed in a previous post, I have installed Cloudera&rsquo;s CDH in my cluster. The CDH allows for convenient definition of Flume Agent. After selecting the Flume service and clicking the Configuration tab, property Configuration File can be searched for. My agent definition was</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>TwitterAgent.sources = Twitter
+</span><span class='line'>TwitterAgent.channels = MemChannel
+</span><span class='line'>TwitterAgent.sinks = HDFS
+</span><span class='line'> 
+</span><span class='line'>TwitterAgent.sources.Twitter.type = com.boldlycoding.twitterstreaming.TrendingStream
+</span><span class='line'>TwitterAgent.sources.Twitter.channels = MemChannel
+</span><span class='line'>
+</span><span class='line'>TwitterAgent.sinks.HDFS.channel = MemChannel
+</span><span class='line'>TwitterAgent.sinks.HDFS.type = hdfs
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.path = hdfs://typhlosion:8020/user/flume/tweets/%Y/%m/%d/%H/
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.fileType = DataStream
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.writeFormat = Text
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.batchSize = 80
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.rollSize = 0
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.rollCount = 100
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.rollInterval = 120
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.minBlockReplicas = 1
+</span><span class='line'> 
+</span><span class='line'>TwitterAgent.channels.MemChannel.type = memory
+</span><span class='line'>TwitterAgent.channels.MemChannel.capacity = 10000
+</span><span class='line'>TwitterAgent.channels.MemChannel.transactionCapacity = 100</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This Flume agent definition uses a custom flume source defined in my uploaded jar. The channel is a Memory Channel, meaning all the tweets will be placed in memory before being written to the sink, which here is the Hadoop HDFS. All of the tweets are written in a text format. The agent also writes 100 tweets to each file before starting a new file, and will automatically close a file after 2 minutes even if 100 tweets have not been written. The memory channel is defined with a capacity of 10,000 tweets and 100 tweets will be move in/out of the channel at a time. The HDFS path parameter defines where on the HDFS the files will be written and the percent signs and characters at the end of the path indicate the directories will be created based on the timestamp of each tweet.</p>
+
+<p>To do the actual capturing, processing, and dispatching to the memory channel, I have defined a custom Flume source by extending the Flume abstract source, access credentials withheld.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>public class TrendingStream extends AbstractSource implements EventDrivenSource, Configurable {
+</span><span class='line'>
+</span><span class='line'>    Authentication auth;
+</span><span class='line'>
+</span><span class='line'>    @Override
+</span><span class='line'>    public void start() {
+</span><span class='line'>        final ChannelProcessor channel = getChannelProcessor();
+</span><span class='line'>        final BlockingQueue&lt;String&gt; queue = new LinkedBlockingQueue&lt;String&gt;(10000);
+</span><span class='line'>        StatusesFilterEndpoint endpoint = new StatusesFilterEndpoint();
+</span><span class='line'>        ArrayList&lt;String&gt; filter_trends = Lists.newArrayList("college", "university", "uni", "school", "higher education", "grad school");
+</span><span class='line'>        endpoint.trackTerms(filter_trends);
+</span><span class='line'>        Client client = new ClientBuilder()
+</span><span class='line'>                .hosts(Constants.STREAM_HOST)
+</span><span class='line'>                .endpoint(endpoint)
+</span><span class='line'>                .authentication(auth)
+</span><span class='line'>                .processor(new StringDelimitedProcessor(queue))
+</span><span class='line'>                .build();
+</span><span class='line'>        client.connect();
+</span><span class='line'>        final JsonParser jsonParser = new JsonParser();
+</span><span class='line'>        final Map&lt;String, String&gt; headers = new HashMap&lt;String, String&gt;();
+</span><span class='line'>
+</span><span class='line'>        TwitterThread tweam = new TwitterThread() {
+</span><span class='line'>
+</span><span class='line'>            @Override
+</span><span class='line'>            public void run() {
+</span><span class='line'>                for (int msgRead = 0; msgRead &lt; 1000; msgRead++) {
+</span><span class='line'>                    try {
+</span><span class='line'>                        String msg = queue.take();
+</span><span class='line'>                        msg = msg.replace("\n", "").replace("\r", "").replace("\\n", "");
+</span><span class='line'>                        msg = msg.replaceAll("\\\\\"", "");
+</span><span class='line'>                        msg = msg.replaceAll("\\\\","");
+</span><span class='line'>                        msg = msg.replaceAll("/","");
+</span><span class='line'>                        //System.out.println(msg);
+</span><span class='line'>                        JsonObject user = jsonParser.parse(msg)
+</span><span class='line'>                                .getAsJsonObject().get("user")
+</span><span class='line'>                                .getAsJsonObject();
+</span><span class='line'>                        String zone = user.get("time_zone").getAsString();
+</span><span class='line'>                        //System.out.println(zone);
+</span><span class='line'>                        msg = msg.trim();
+</span><span class='line'>                        headers.put("timestamp", String.valueOf(new Date().getTime()));
+</span><span class='line'>                    Event event = EventBuilder.withBody(msg.getBytes(), headers);
+</span><span class='line'>                    channel.processEvent(event);
+</span><span class='line'>                    } catch (InterruptedException ex) {
+</span><span class='line'>                        Logger.getLogger(TrendingStream.class.getName()).log(Level.SEVERE, null, ex);
+</span><span class='line'>                    } catch (UnsupportedOperationException ex) {
+</span><span class='line'>                        msgRead--;
+</span><span class='line'>                    } catch (NullPointerException ex) {
+</span><span class='line'>                        msgRead--;
+</span><span class='line'>                        try {
+</span><span class='line'>                            Thread.sleep(2000);
+</span><span class='line'>                        } catch (InterruptedException ex1) {
+</span><span class='line'>                            System.out.println("Thread Interrupt");
+</span><span class='line'>                        }
+</span><span class='line'>                    }
+</span><span class='line'>
+</span><span class='line'>                    if (msgRead &lt;= -10000) {
+</span><span class='line'>                        break;
+</span><span class='line'>                    }
+</span><span class='line'>
+</span><span class='line'>                }
+</span><span class='line'>            }
+</span><span class='line'>        };
+</span><span class='line'>
+</span><span class='line'>        tweam.run();
+</span><span class='line'>
+</span><span class='line'>        super.start();
+</span><span class='line'>
+</span><span class='line'>    }
+</span><span class='line'>
+</span><span class='line'>    @Override
+</span><span class='line'>    public void configure(Context cntxt) {
+</span><span class='line'>        auth = new OAuth1("consumerKey", "consumerSecret", "token", "tokenSecret");
+</span><span class='line'>    }
+</span><span class='line'>
+</span><span class='line'>    @Override
+</span><span class='line'>    public void stop() {
+</span><span class='line'>        super.stop();
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The source begins by defining a Flume channel processor, blocking queue, and a filtering status endpoint. The processor and queue and more obvious. The filtering status endpoint captures live tweets, and applies a set of filtering terms. A tweets must contain all the terms in one of the items in the set. For instance, referencing the set in the previous code snippet, a tweet with the work college would be captured. A tweet containing higher education would be captured as well, but a tweet only containing the word higher or education would not.</p>
+
+<p>In this code snippet the loop would capture 1000 tweets before stopping. When a tweet is captured the code filters out backslashes, double backslashes, forward slashes, and new lines from the JSON data format of the tweet. This is important because if they are not filtered out it causes the JSON parser to throw and error and is unable to process the tweets. This was one of the more difficult points to discover, and filtering out all the necessary characters was an extremely iterative process. After the tweet is cleaned, the tweet is checked for a valid (non-blank) time zone which allows for regionalization of the sentiment data (It is interesting to note that since Twitter is built on Ruby all of the timezone options are the same as those that are found in Ruby). Through the course of the study I have noted that about half of tweets have an invalid time zone. If a valid time zone is not found, the loop is set back an iteration. This allows for the specified number of tweets to be captured. Also, to avoid an infinite loop the loop control variable is check for a large negative value, and a break is issued if a large value is found. This should be relative to the number of tweets that need to be captured. Finally, the tweet data is stamped with a timestamp and it is passed to the channel processor. The settings in the Flume Agent configuration then control how the channel handles placing the events into the sink. This was another very difficult part of the project to configure as the channel must be set up so it is not overwhelmed by the speed of incoming tweets.</p>
+
+<h2>Processing the Tweets</h2>
+
+<p>To process the sentiment data in the Hadoop HDFS Hive (provided with Cloudera CDH) is used. Hive is an Apache project that provides a SQL interface for querying the Hadoop HDFS. The run the SQL queries, Hive runs MapReduce jobs taking advantage of the other distributed Hadoop component. The following Hive script analyzes the Tweet data and produces several new tables the last of which contains the required sentiment data.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>DROP TABLE tweets_raw;
+</span><span class='line'>DROP TABLE dictionary;
+</span><span class='line'>DROP TABLE time_zone_map;
+</span><span class='line'>DROP VIEW tweets_simple;
+</span><span class='line'>DROP VIEW l1;
+</span><span class='line'>DROP VIEW l2;
+</span><span class='line'>DROP VIEW l3;
+</span><span class='line'>DROP TABLE tweets_sentiment;
+</span><span class='line'>DROP TABLE tweetsbi;
+</span><span class='line'>
+</span><span class='line'>CREATE EXTERNAL TABLE tweets_raw (
+</span><span class='line'>   id BIGINT,
+</span><span class='line'>   created_at STRING,
+</span><span class='line'>   source STRING,
+</span><span class='line'>   favorited BOOLEAN,
+</span><span class='line'>   retweet_count INT,
+</span><span class='line'>   retweeted_status STRUCT&lt;
+</span><span class='line'>      text:STRING,
+</span><span class='line'>      user:STRUCT&lt;screen_name:STRING,name:STRING&gt;&gt;,
+</span><span class='line'>   entities STRUCT&lt;
+</span><span class='line'>      urls:ARRAY&lt;STRUCT&lt;expanded_url:STRING&gt;&gt;,
+</span><span class='line'>      user_mentions:ARRAY&lt;STRUCT&lt;screen_name:STRING,name:STRING&gt;&gt;,
+</span><span class='line'>      hashtags:ARRAY&lt;STRUCT&lt;text:STRING&gt;&gt;&gt;,
+</span><span class='line'>   text STRING,
+</span><span class='line'>   user STRUCT&lt;
+</span><span class='line'>      screen_name:STRING,
+</span><span class='line'>      name:STRING,
+</span><span class='line'>      friends_count:INT,
+</span><span class='line'>      followers_count:INT,
+</span><span class='line'>      statuses_count:INT,
+</span><span class='line'>      verified:BOOLEAN,
+</span><span class='line'>      utc_offset:STRING, -- was INT but nulls are strings
+</span><span class='line'>      time_zone:STRING&gt;
+</span><span class='line'>)
+</span><span class='line'>ROW FORMAT SERDE 'com.cloudera.hive.serde.JSONSerDe'
+</span><span class='line'>LOCATION '/user/flume/tweets'
+</span><span class='line'>;
+</span><span class='line'>
+</span><span class='line'>-- create sentiment dictionary
+</span><span class='line'>CREATE EXTERNAL TABLE dictionary (
+</span><span class='line'>    type string,
+</span><span class='line'>    length int,
+</span><span class='line'>    word string,
+</span><span class='line'>    pos string,
+</span><span class='line'>    stemmed string,
+</span><span class='line'>    polarity string
+</span><span class='line'>)
+</span><span class='line'>ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' 
+</span><span class='line'>STORED AS TEXTFILE
+</span><span class='line'>LOCATION '/user/home/gmcdaid/data/dictionary';
+</span><span class='line'>
+</span><span class='line'>CREATE EXTERNAL TABLE time_zone_map (
+</span><span class='line'>    time_zone string,
+</span><span class='line'>    country string,
+</span><span class='line'>    notes string
+</span><span class='line'>)
+</span><span class='line'>ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' 
+</span><span class='line'>STORED AS TEXTFILE
+</span><span class='line'>LOCATION '/user/home/gmcdaid/data/time_zone_map';
+</span><span class='line'>
+</span><span class='line'>CREATE VIEW tweets_simple AS
+</span><span class='line'>SELECT
+</span><span class='line'>  id,
+</span><span class='line'>  cast ( from_unixtime( unix_timestamp(concat( '2015 ', substring(created_at,5,15)), 'yyyy MMM dd hh:mm:ss')) as timestamp) ts,
+</span><span class='line'>  text,
+</span><span class='line'>  time_zone_map.country
+</span><span class='line'>FROM tweets_raw
+</span><span class='line'>JOIN time_zone_map ON tweets_raw.user.time_zone = time_zone_map.time_zone
+</span><span class='line'>;
+</span><span class='line'>
+</span><span class='line'>create view l1 as select id, words from tweets_simple lateral view explode(sentences(lower(text))) dummy as words;
+</span><span class='line'>create view l2 as select id, word from l1 lateral view explode( words ) dummy as word ;
+</span><span class='line'>
+</span><span class='line'>create view l3 as select 
+</span><span class='line'>    id, 
+</span><span class='line'>    l2.word, 
+</span><span class='line'>    case d.polarity 
+</span><span class='line'>      when  'negative' then -1
+</span><span class='line'>      when 'positive' then 1 
+</span><span class='line'>      else 0 end as polarity 
+</span><span class='line'> from l2 left outer join dictionary d on l2.word = d.word;
+</span><span class='line'> 
+</span><span class='line'>create table tweets_sentiment stored as orc as select 
+</span><span class='line'>id, 
+</span><span class='line'>case 
+</span><span class='line'>when sum( polarity ) &gt; 0 then 'positive' 
+</span><span class='line'>when sum( polarity ) &lt; 0 then 'negative'  
+</span><span class='line'>else 'neutral' end as sentiment 
+</span><span class='line'>from l3 group by id;
+</span><span class='line'>
+</span><span class='line'>CREATE TABLE tweetsbi 
+</span><span class='line'>STORED AS ORC
+</span><span class='line'>AS
+</span><span class='line'>SELECT 
+</span><span class='line'>  t.*,
+</span><span class='line'>  case s.sentiment 
+</span><span class='line'>    when 'positive' then 2 
+</span><span class='line'>    when 'neutral' then 1 
+</span><span class='line'>    when 'negative' then 0 
+</span><span class='line'>  end as sentiment  
+</span><span class='line'>FROM tweets_simple t JOIN tweets_sentiment s on t.id = s.id;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This script has a multitude of intermediate steps. It begins by creating a table containing all the raw Twitter information. The accommodate all the nested structures in the JSON Hive provides ARRAY and STRUCT structures. The table specifies a SERDE and LOCATION, the location leaves all the data on the file system instead of importing it. The SERDE clause instructs the table to parse the data using the specified serializer/deseralizer. This is a generic piece of code provided by Cloudera to process JSON data. Next, the script creates the dictionary and time zone tables. The dictionary contains all of the words to be analysed and their associated sentiment values. This is sometimes referred to as a lexicon. The time zone table maps the twitter time zones to generic regions. The list was created using the list of time zones that Ruby supports. After this, the script creates a simpler tweets table containing only the required information. Following this three lateral views are created to analyse the twitter data using the information from the dictionary file. The final two steps reorganize the data and create more readable tables. Positive sentiment becomes a 2, neutral sentiment is a 1, and negative sentiment is a 0. Following processing all of the tweet data, the data can be presented, in a later post I will discuss using PHP and Google charts to present the data.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="glyphicon glyphicon-user"></span> <span class="byline author vcard" itemprop="author" itemscope itemtype="http://schema.org/Person">Posted by <span class="fn" itemprop="name">George McDaid</span></span>
+
+      
+
+
+
+<time class='entry-date' datetime='2015-03-17T17:55:55-04:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:55 pm</span></time>
+      
+
+<span class="glyphicon glyphicon-tags"></span>&nbsp;
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/big-data/'>big data</a>, <a class='category' href='/blog/categories/capstone-2015/'>capstone 2015</a>, <a class='category' href='/blog/categories/cloudera/'>cloudera</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://boldlycoding.com/blog/2015/03/17/collecting-and-processing-tweets/" data-via="" data-counturl="http://boldlycoding.com/blog/2015/03/17/collecting-and-processing-tweets/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/03/13/laravel-and-advanced-routing-to-controllers/" title="Previous Post: Laravel and Advanced Routing to Controllers">&laquo; Laravel and Advanced Routing to Controllers</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Recent Posts</h3>
+  </div>
+  
+  <div id="recent_posts" class="list-group">
+    
+    <a class="list-group-item active" href="/blog/2015/03/17/collecting-and-processing-tweets/">Collecting and Processing Tweets</a>
+    
+    <a class="list-group-item " href="/blog/2015/03/13/laravel-and-advanced-routing-to-controllers/">Laravel and Advanced Routing to Controllers</a>
+    
+    <a class="list-group-item " href="/blog/2015/02/27/laravel-routing-and-controllers/">Laravel Routing and Controllers</a>
+    
+    <a class="list-group-item " href="/blog/2015/02/16/laravel-and-blade/">Laravel and Blade</a>
+    
+    <a class="list-group-item " href="/blog/2015/02/11/twitter-trends/">Twitter Trends</a>
+    
+  </div>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+        </div>
+      </div>
+    </div>
+    <footer role="contentinfo"><div class="container">
+    <p class="text-muted credits">
+  Copyright &copy; 2015 - George McDaid<br>
+  <small>
+      <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>,
+      <span class="credit">customized with <a href="https://github.com/kAworu/octostrap3">octostrap3</a></span>.
+  </small>
+</p>
+
+</div>
+</footer>
+    
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="/javascripts/modernizr-2.0.js"></script>
+
+
+  </body>
+</html>

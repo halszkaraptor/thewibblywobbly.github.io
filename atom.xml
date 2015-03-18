@@ -4,7 +4,7 @@
   <title><![CDATA[To Boldly Code...]]></title>
   <link href="http://boldlycoding.com/atom.xml" rel="self"/>
   <link href="http://boldlycoding.com/"/>
-  <updated>2015-02-11T02:08:17-05:00</updated>
+  <updated>2015-03-18T02:58:09-04:00</updated>
   <id>http://boldlycoding.com/</id>
   <author>
     <name><![CDATA[George McDaid]]></name>
@@ -12,6 +12,950 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Collecting and Processing Tweets]]></title>
+    <link href="http://boldlycoding.com/blog/2015/03/17/collecting-and-processing-tweets/"/>
+    <updated>2015-03-17T17:55:55-04:00</updated>
+    <id>http://boldlycoding.com/blog/2015/03/17/collecting-and-processing-tweets</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<p><img class="center" src="http://boldlycoding.com/images/tweet_process.png" width="1000" height="400" title="Tweet collection and processing" ></p>
+
+<h2>Collecting the Tweets</h2>
+
+<p>Tweet collection is driven the Apache project Flume. Flume collects, aggregates, and moves variable amounts of streaming data. The data can be from a variety of sources including server and other logs. Flume overall is very flexible and customisable based on the particular application. It not only support multiple sources, but also multiple processing mediums, or channels. Here channels are where the data in question is stored before being being written to its final destination, or sink. Flume captures data from a source, and stores it in a channel before finally writing the data to the sink. Channels can be in memory, in a file, or files, or a combination of the two. The logical structure of the source, channel and sink, is an agent. A flume agent that captures web server data and writes it to a Hadoop HDFs would logically look like the following</p>
+
+<p><img class="center" src="http://boldlycoding.com/images/flume_agent.png" width="540" height="440" title="A typical flume agent" ></p>
+
+<p>As discussed in a previous post, I have installed Cloudera&rsquo;s CDH in my cluster. The CDH allows for convenient definition of Flume Agent. After selecting the Flume service and clicking the Configuration tab, property Configuration File can be searched for. My agent definition was</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>TwitterAgent.sources = Twitter
+</span><span class='line'>TwitterAgent.channels = MemChannel
+</span><span class='line'>TwitterAgent.sinks = HDFS
+</span><span class='line'> 
+</span><span class='line'>TwitterAgent.sources.Twitter.type = com.boldlycoding.twitterstreaming.TrendingStream
+</span><span class='line'>TwitterAgent.sources.Twitter.channels = MemChannel
+</span><span class='line'>
+</span><span class='line'>TwitterAgent.sinks.HDFS.channel = MemChannel
+</span><span class='line'>TwitterAgent.sinks.HDFS.type = hdfs
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.path = hdfs://typhlosion:8020/user/flume/tweets/%Y/%m/%d/%H/
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.fileType = DataStream
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.writeFormat = Text
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.batchSize = 80
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.rollSize = 0
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.rollCount = 100
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.rollInterval = 120
+</span><span class='line'>TwitterAgent.sinks.HDFS.hdfs.minBlockReplicas = 1
+</span><span class='line'> 
+</span><span class='line'>TwitterAgent.channels.MemChannel.type = memory
+</span><span class='line'>TwitterAgent.channels.MemChannel.capacity = 10000
+</span><span class='line'>TwitterAgent.channels.MemChannel.transactionCapacity = 100</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This Flume agent definition uses a custom flume source defined in my uploaded jar. The channel is a Memory Channel, meaning all the tweets will be placed in memory before being written to the sink, which here is the Hadoop HDFS. All of the tweets are written in a text format. The agent also writes 100 tweets to each file before starting a new file, and will automatically close a file after 2 minutes even if 100 tweets have not been written. The memory channel is defined with a capacity of 10,000 tweets and 100 tweets will be move in/out of the channel at a time. The HDFS path parameter defines where on the HDFS the files will be written and the percent signs and characters at the end of the path indicate the directories will be created based on the timestamp of each tweet.</p>
+
+<p>To do the actual capturing, processing, and dispatching to the memory channel, I have defined a custom Flume source by extending the Flume abstract source, access credentials withheld.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>public class TrendingStream extends AbstractSource implements EventDrivenSource, Configurable {
+</span><span class='line'>
+</span><span class='line'>    Authentication auth;
+</span><span class='line'>
+</span><span class='line'>    @Override
+</span><span class='line'>    public void start() {
+</span><span class='line'>        final ChannelProcessor channel = getChannelProcessor();
+</span><span class='line'>        final BlockingQueue&lt;String&gt; queue = new LinkedBlockingQueue&lt;String&gt;(10000);
+</span><span class='line'>        StatusesFilterEndpoint endpoint = new StatusesFilterEndpoint();
+</span><span class='line'>        ArrayList&lt;String&gt; filter_trends = Lists.newArrayList("college", "university", "uni", "school", "higher education", "grad school");
+</span><span class='line'>        endpoint.trackTerms(filter_trends);
+</span><span class='line'>        Client client = new ClientBuilder()
+</span><span class='line'>                .hosts(Constants.STREAM_HOST)
+</span><span class='line'>                .endpoint(endpoint)
+</span><span class='line'>                .authentication(auth)
+</span><span class='line'>                .processor(new StringDelimitedProcessor(queue))
+</span><span class='line'>                .build();
+</span><span class='line'>        client.connect();
+</span><span class='line'>        final JsonParser jsonParser = new JsonParser();
+</span><span class='line'>        final Map&lt;String, String&gt; headers = new HashMap&lt;String, String&gt;();
+</span><span class='line'>
+</span><span class='line'>        TwitterThread tweam = new TwitterThread() {
+</span><span class='line'>
+</span><span class='line'>            @Override
+</span><span class='line'>            public void run() {
+</span><span class='line'>                for (int msgRead = 0; msgRead &lt; 1000; msgRead++) {
+</span><span class='line'>                    try {
+</span><span class='line'>                        String msg = queue.take();
+</span><span class='line'>                        msg = msg.replace("\n", "").replace("\r", "").replace("\\n", "");
+</span><span class='line'>                        msg = msg.replaceAll("\\\\\"", "");
+</span><span class='line'>                        msg = msg.replaceAll("\\\\","");
+</span><span class='line'>                        msg = msg.replaceAll("/","");
+</span><span class='line'>                        //System.out.println(msg);
+</span><span class='line'>                        JsonObject user = jsonParser.parse(msg)
+</span><span class='line'>                                .getAsJsonObject().get("user")
+</span><span class='line'>                                .getAsJsonObject();
+</span><span class='line'>                        String zone = user.get("time_zone").getAsString();
+</span><span class='line'>                        //System.out.println(zone);
+</span><span class='line'>                        msg = msg.trim();
+</span><span class='line'>                        headers.put("timestamp", String.valueOf(new Date().getTime()));
+</span><span class='line'>                    Event event = EventBuilder.withBody(msg.getBytes(), headers);
+</span><span class='line'>                    channel.processEvent(event);
+</span><span class='line'>                    } catch (InterruptedException ex) {
+</span><span class='line'>                        Logger.getLogger(TrendingStream.class.getName()).log(Level.SEVERE, null, ex);
+</span><span class='line'>                    } catch (UnsupportedOperationException ex) {
+</span><span class='line'>                        msgRead--;
+</span><span class='line'>                    } catch (NullPointerException ex) {
+</span><span class='line'>                        msgRead--;
+</span><span class='line'>                        try {
+</span><span class='line'>                            Thread.sleep(2000);
+</span><span class='line'>                        } catch (InterruptedException ex1) {
+</span><span class='line'>                            System.out.println("Thread Interrupt");
+</span><span class='line'>                        }
+</span><span class='line'>                    }
+</span><span class='line'>
+</span><span class='line'>                    if (msgRead &lt;= -10000) {
+</span><span class='line'>                        break;
+</span><span class='line'>                    }
+</span><span class='line'>
+</span><span class='line'>                }
+</span><span class='line'>            }
+</span><span class='line'>        };
+</span><span class='line'>
+</span><span class='line'>        tweam.run();
+</span><span class='line'>
+</span><span class='line'>        super.start();
+</span><span class='line'>
+</span><span class='line'>    }
+</span><span class='line'>
+</span><span class='line'>    @Override
+</span><span class='line'>    public void configure(Context cntxt) {
+</span><span class='line'>        auth = new OAuth1("consumerKey", "consumerSecret", "token", "tokenSecret");
+</span><span class='line'>    }
+</span><span class='line'>
+</span><span class='line'>    @Override
+</span><span class='line'>    public void stop() {
+</span><span class='line'>        super.stop();
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The source begins by defining a Flume channel processor, blocking queue, and a filtering status endpoint. The processor and queue and more obvious. The filtering status endpoint captures live tweets, and applies a set of filtering terms. A tweets must contain all the terms in one of the items in the set. For instance, referencing the set in the previous code snippet, a tweet with the work college would be captured. A tweet containing higher education would be captured as well, but a tweet only containing the word higher or education would not.</p>
+
+<p>In this code snippet the loop would capture 1000 tweets before stopping. When a tweet is captured the code filters out backslashes, double backslashes, forward slashes, and new lines from the JSON data format of the tweet. This is important because if they are not filtered out it causes the JSON parser to throw and error and is unable to process the tweets. This was one of the more difficult points to discover, and filtering out all the necessary characters was an extremely iterative process. After the tweet is cleaned, the tweet is checked for a valid (non-blank) time zone which allows for regionalization of the sentiment data (It is interesting to note that since Twitter is built on Ruby all of the timezone options are the same as those that are found in Ruby). Through the course of the study I have noted that about half of tweets have an invalid time zone. If a valid time zone is not found, the loop is set back an iteration. This allows for the specified number of tweets to be captured. Also, to avoid an infinite loop the loop control variable is check for a large negative value, and a break is issued if a large value is found. This should be relative to the number of tweets that need to be captured. Finally, the tweet data is stamped with a timestamp and it is passed to the channel processor. The settings in the Flume Agent configuration then control how the channel handles placing the events into the sink. This was another very difficult part of the project to configure as the channel must be set up so it is not overwhelmed by the speed of incoming tweets.</p>
+
+<h2>Processing the Tweets</h2>
+
+<p>To process the sentiment data in the Hadoop HDFS Hive (provided with Cloudera CDH) is used. Hive is an Apache project that provides a SQL interface for querying the Hadoop HDFS. The run the SQL queries, Hive runs MapReduce jobs taking advantage of the other distributed Hadoop component. The following Hive script analyzes the Tweet data and produces several new tables the last of which contains the required sentiment data.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>DROP TABLE tweets_raw;
+</span><span class='line'>DROP TABLE dictionary;
+</span><span class='line'>DROP TABLE time_zone_map;
+</span><span class='line'>DROP VIEW tweets_simple;
+</span><span class='line'>DROP VIEW l1;
+</span><span class='line'>DROP VIEW l2;
+</span><span class='line'>DROP VIEW l3;
+</span><span class='line'>DROP TABLE tweets_sentiment;
+</span><span class='line'>DROP TABLE tweetsbi;
+</span><span class='line'>
+</span><span class='line'>CREATE EXTERNAL TABLE tweets_raw (
+</span><span class='line'>   id BIGINT,
+</span><span class='line'>   created_at STRING,
+</span><span class='line'>   source STRING,
+</span><span class='line'>   favorited BOOLEAN,
+</span><span class='line'>   retweet_count INT,
+</span><span class='line'>   retweeted_status STRUCT&lt;
+</span><span class='line'>      text:STRING,
+</span><span class='line'>      user:STRUCT&lt;screen_name:STRING,name:STRING&gt;&gt;,
+</span><span class='line'>   entities STRUCT&lt;
+</span><span class='line'>      urls:ARRAY&lt;STRUCT&lt;expanded_url:STRING&gt;&gt;,
+</span><span class='line'>      user_mentions:ARRAY&lt;STRUCT&lt;screen_name:STRING,name:STRING&gt;&gt;,
+</span><span class='line'>      hashtags:ARRAY&lt;STRUCT&lt;text:STRING&gt;&gt;&gt;,
+</span><span class='line'>   text STRING,
+</span><span class='line'>   user STRUCT&lt;
+</span><span class='line'>      screen_name:STRING,
+</span><span class='line'>      name:STRING,
+</span><span class='line'>      friends_count:INT,
+</span><span class='line'>      followers_count:INT,
+</span><span class='line'>      statuses_count:INT,
+</span><span class='line'>      verified:BOOLEAN,
+</span><span class='line'>      utc_offset:STRING, -- was INT but nulls are strings
+</span><span class='line'>      time_zone:STRING&gt;
+</span><span class='line'>)
+</span><span class='line'>ROW FORMAT SERDE 'com.cloudera.hive.serde.JSONSerDe'
+</span><span class='line'>LOCATION '/user/flume/tweets'
+</span><span class='line'>;
+</span><span class='line'>
+</span><span class='line'>-- create sentiment dictionary
+</span><span class='line'>CREATE EXTERNAL TABLE dictionary (
+</span><span class='line'>    type string,
+</span><span class='line'>    length int,
+</span><span class='line'>    word string,
+</span><span class='line'>    pos string,
+</span><span class='line'>    stemmed string,
+</span><span class='line'>    polarity string
+</span><span class='line'>)
+</span><span class='line'>ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' 
+</span><span class='line'>STORED AS TEXTFILE
+</span><span class='line'>LOCATION '/user/home/gmcdaid/data/dictionary';
+</span><span class='line'>
+</span><span class='line'>CREATE EXTERNAL TABLE time_zone_map (
+</span><span class='line'>    time_zone string,
+</span><span class='line'>    country string,
+</span><span class='line'>    notes string
+</span><span class='line'>)
+</span><span class='line'>ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' 
+</span><span class='line'>STORED AS TEXTFILE
+</span><span class='line'>LOCATION '/user/home/gmcdaid/data/time_zone_map';
+</span><span class='line'>
+</span><span class='line'>CREATE VIEW tweets_simple AS
+</span><span class='line'>SELECT
+</span><span class='line'>  id,
+</span><span class='line'>  cast ( from_unixtime( unix_timestamp(concat( '2015 ', substring(created_at,5,15)), 'yyyy MMM dd hh:mm:ss')) as timestamp) ts,
+</span><span class='line'>  text,
+</span><span class='line'>  time_zone_map.country
+</span><span class='line'>FROM tweets_raw
+</span><span class='line'>JOIN time_zone_map ON tweets_raw.user.time_zone = time_zone_map.time_zone
+</span><span class='line'>;
+</span><span class='line'>
+</span><span class='line'>create view l1 as select id, words from tweets_simple lateral view explode(sentences(lower(text))) dummy as words;
+</span><span class='line'>create view l2 as select id, word from l1 lateral view explode( words ) dummy as word ;
+</span><span class='line'>
+</span><span class='line'>create view l3 as select 
+</span><span class='line'>    id, 
+</span><span class='line'>    l2.word, 
+</span><span class='line'>    case d.polarity 
+</span><span class='line'>      when  'negative' then -1
+</span><span class='line'>      when 'positive' then 1 
+</span><span class='line'>      else 0 end as polarity 
+</span><span class='line'> from l2 left outer join dictionary d on l2.word = d.word;
+</span><span class='line'> 
+</span><span class='line'>create table tweets_sentiment stored as orc as select 
+</span><span class='line'>id, 
+</span><span class='line'>case 
+</span><span class='line'>when sum( polarity ) &gt; 0 then 'positive' 
+</span><span class='line'>when sum( polarity ) &lt; 0 then 'negative'  
+</span><span class='line'>else 'neutral' end as sentiment 
+</span><span class='line'>from l3 group by id;
+</span><span class='line'>
+</span><span class='line'>CREATE TABLE tweetsbi 
+</span><span class='line'>STORED AS ORC
+</span><span class='line'>AS
+</span><span class='line'>SELECT 
+</span><span class='line'>  t.*,
+</span><span class='line'>  case s.sentiment 
+</span><span class='line'>    when 'positive' then 2 
+</span><span class='line'>    when 'neutral' then 1 
+</span><span class='line'>    when 'negative' then 0 
+</span><span class='line'>  end as sentiment  
+</span><span class='line'>FROM tweets_simple t JOIN tweets_sentiment s on t.id = s.id;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This script has a multitude of intermediate steps. It begins by creating a table containing all the raw Twitter information. The accommodate all the nested structures in the JSON Hive provides ARRAY and STRUCT structures. The table specifies a SERDE and LOCATION, the location leaves all the data on the file system instead of importing it. The SERDE clause instructs the table to parse the data using the specified serializer/deseralizer. This is a generic piece of code provided by Cloudera to process JSON data. Next, the script creates the dictionary and time zone tables. The dictionary contains all of the words to be analysed and their associated sentiment values. This is sometimes referred to as a lexicon. The time zone table maps the twitter time zones to generic regions. The list was created using the list of time zones that Ruby supports. After this, the script creates a simpler tweets table containing only the required information. Following this three lateral views are created to analyse the twitter data using the information from the dictionary file. The final two steps reorganize the data and create more readable tables. Positive sentiment becomes a 2, neutral sentiment is a 1, and negative sentiment is a 0. Following processing all of the tweet data, the data can be presented, in a later post I will discuss using PHP and Google charts to present the data.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Laravel and Advanced Routing to Controllers]]></title>
+    <link href="http://boldlycoding.com/blog/2015/03/13/laravel-and-advanced-routing-to-controllers/"/>
+    <updated>2015-03-13T03:08:01-04:00</updated>
+    <id>http://boldlycoding.com/blog/2015/03/13/laravel-and-advanced-routing-to-controllers</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<p>Following the previous discussion of routes and controllers, there are other constructs within the Laravel framework that are also worth noting.</p>
+
+<h2>Parameter Constraints</h2>
+
+<p>Laravel allows for constraints to be placed on route parameters, which were discussed in the previous post. Parameter constraints are more basic to type than route filters, but just as powerful. Route parameter constraints are implemented using regular expressions listed with an accompanying parameter name. Before a request is passed to the controller within a route function, the parameter must satisfy the regular expression.</p>
+
+<p>The first route must only be alphabetical, while the second must be numerical. Laravel will only dispatch a request to these routes if the parameter meets the regular expression.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Route::get('user/{name}', function($name)
+</span><span class='line'>{
+</span><span class='line'>    //
+</span><span class='line'>})
+</span><span class='line'>-&gt;where('name', '[A-Za-z]+');
+</span><span class='line'>
+</span><span class='line'>Route::get('user/{id}', function($id)
+</span><span class='line'>{
+</span><span class='line'>    //
+</span><span class='line'>})
+</span><span class='line'>-&gt;where('id', '[0-9]+');</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The routes can also be combined and pass an array of constraints</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Route::get('user/{id}/{name}', function($id, $name)
+</span><span class='line'>{
+</span><span class='line'>    //
+</span><span class='line'>})
+</span><span class='line'>-&gt;where(['id' =&gt; '[0-9]+', 'name' =&gt; '[a-z]+'])</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Although not this it is not found within the routing file, it is useful to note the <em>firstOrFail</em> and <em>findOrFail</em> functions here. These functions are used to find data within a table using an identifier, when the record is not found, an exception is thrown. This failure can then propagate up to a 404 error page, and no routing or redirection is needed within the controller. <em>findOrFail($id)</em> is used when the identifier being used is the primary key, <em>firstOrFail()</em> is used when the identifier is not the primary key.</p>
+
+<p>This function will fail if the content identifier does not exist. The error can be caught in the app&rsquo;s config file and a 404 view can be presented.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>public function getContent($content = null){
+</span><span class='line'>  $view = View::make('content');
+</span><span class='line'>  
+</span><span class='line'>  $content = Content::findOrFail($id);
+</span><span class='line'>  
+</span><span class='line'>  $view-&gt;with('content', $content);
+</span><span class='line'>  
+</span><span class='line'>  return $view;
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Another variation with the <em>firstOrFail</em> function, here the primary key is not used. The content URL is compared to other URLs in the database.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>public function getContent($url = null)
+</span><span class='line'>{
+</span><span class='line'>  
+</span><span class='line'>      $view = View::make('content');
+</span><span class='line'>      
+</span><span class='line'>      $content = Content::where('url', '=', $url)-&gt;firstOrFail();
+</span><span class='line'>      
+</span><span class='line'>      $view-&gt;with('content', $content);
+</span><span class='line'>      
+</span><span class='line'>      return $view;
+</span><span class='line'>      
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Routing Groups</h2>
+
+<p>When a routing filter needs to be applied to multiple routes, it is useful to implement this as a route group. When routes are grouped, for an route within the group to be accessed, the filter must be satisfied. This is incredibly useful when creating pages that all require the user to be authenticated. A route group is setup in the following way</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Route::group(array('before' =&gt; 'authed'), function()
+</span><span class='line'>{
+</span><span class='line'>    Route::get('/account/landing', array('as' =&gt; 'myprotech', 'uses' =&gt; 'AccountController@getLanding'));
+</span><span class='line'>    
+</span><span class='line'>    Route::get('/account/courses', array('as' =&gt; 'student_courses', 'uses' =&gt; 'AccountController@getStudentCourses'));
+</span><span class='line'>    
+</span><span class='line'>    Route::get('/account/student_account', array('as' =&gt; 'student_account', 'uses' =&gt; 'AccountController@getStudentAccount'));
+</span><span class='line'>});
+</span><span class='line'>
+</span><span class='line'>Route::filter('authed', function()
+</span><span class='line'>{
+</span><span class='line'>    if (!Auth::check())
+</span><span class='line'>    {
+</span><span class='line'>        Session::flash('message', 'You must login to view this page.');
+</span><span class='line'>        return Redirect::guest(route('display_login'));
+</span><span class='line'>    }
+</span><span class='line'>});</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The route group accepts an array with the filter name(s) and a function that contains the routes. Within the routing group, to access any of the three routes, the <em>authed</em> filter must be satisfied, This filter checks to ensure the current user is logged in. If the user is not logged in, a message is flashed for the next session, and they are redirected to the login screen. Here the Redirect::guest function is used to when valid credentials are supplied, the user if logged in and they are redirected to their original destination. This is a very elegant solution to a common control structure, and simplifies site code.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Laravel Routing and Controllers]]></title>
+    <link href="http://boldlycoding.com/blog/2015/02/27/laravel-routing-and-controllers/"/>
+    <updated>2015-02-27T22:33:01-05:00</updated>
+    <id>http://boldlycoding.com/blog/2015/02/27/laravel-routing-and-controllers</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<h2>Routing</h2>
+
+<p>Routing in Laravel is the process of taking HTTP requests, like GET and POST, taking the appropiate action. This is frequently routing the request to a controller. Laravel houses route definitions in</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>app/routes.php</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Routes in this file can respond to one, many, or all HTTP request verbs.</p>
+
+<p>This would respond to POST:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Route::post('/', function()
+</span><span class='line'>{
+</span><span class='line'>    return 'POST: Hello World';
+</span><span class='line'>});</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This route responds to GET and POST:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Route::match(array('GET', 'POST'), '/', function()
+</span><span class='line'>{
+</span><span class='line'>    return 'GET & POST: Hello World';
+</span><span class='line'>});</span></code></pre></td></tr></table></div></figure>
+
+
+<p>These two previous route examples do not register names with the route handlers. This makes it slightly less easy to refer to the routes in view, to create URLs. It is a beneficial practice to always associative a name with a declared route. To declare a named route in Laravel</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Route::get('/account/my_account', array('as' =&gt; 'my_account', function()
+</span><span class='line'>{
+</span><span class='line'>    return 'GET "my_account" route: Hello World';
+</span><span class='line'>}));</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This route responds to the GET verb for requests to /account/my_account. The route can be referred to with the following in views to create URLs that would link to the named route</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>URL::route('my_account');</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Although all these basic routes have their uses, often URL parameters are required for the effective operation of a page. A route with a parameter is declared as</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Route::get('/account/my_account/{id}', array('as' =&gt; 'my_account', function()
+</span><span class='line'>{
+</span><span class='line'>    return 'GET "my_account" route: ' . $id;
+</span><span class='line'>}));</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This route requires the request have an id parameter. A parameter is optional if followed by a &lsquo;?&rsquo;. In this case there was no question mark after if, so the parameter is required.</p>
+
+<p>One other useful construct that can be attached to routes is the filter. Filters allow preprocessing of a HTTP request before it gets routed to a particular location, like a controller. This is useful for processes like authentication checks. To declare a filter that would check if the user is authenticated</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Route::filter('auth', function()
+</span><span class='line'>{
+</span><span class='line'>    if (!Auth::user())
+</span><span class='line'>    {
+</span><span class='line'>        return Redirect::to('sign_in');
+</span><span class='line'>    }
+</span><span class='line'>});</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This filter can then be applied to a route</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Route::get('my_account', array('before' =&gt; 'auth', function()
+</span><span class='line'>{
+</span><span class='line'>    return 'Account Info';
+</span><span class='line'>}));</span></code></pre></td></tr></table></div></figure>
+
+
+<p>When the filter is applied to that route, it will ensure that all users accessing the my_account page are logged in. If the user is not logged in, they are redirected to the sign_in page.</p>
+
+<p>All of the previously detailed routes had string or route returns, it is much more common to have routes that direct to controllers.</p>
+
+<h2>Controllers</h2>
+
+<p>Controllers in Laravel function similarly to controllers in other MVC structures. They get data from the model (the database), process this data, and the pass it to a Laravel view. The controller may also do other preliminary processing like user authentication or key validation. The first step to using a Laravel controller is declaring a route to the controller</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Route::get('/', array('as' =&gt; 'home', 'uses' =&gt; 'HomeController@getIndex'));</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This is a basic example that declares a named route &lsquo;home&rsquo; that responds to all GET requests to the index page and routes them to the getIndex method in the HomeController. After declaring this route the HomeController file should be created in the app/controllers directory. An appropiate controller would look something like the following</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;?php
+</span><span class='line'>
+</span><span class='line'>class HomeController extends BaseController {
+</span><span class='line'>
+</span><span class='line'>  public function getIndex()
+</span><span class='line'>  {
+</span><span class='line'>      
+</span><span class='line'>            $view = View::make('home');
+</span><span class='line'>
+</span><span class='line'>          return $view;
+</span><span class='line'>            
+</span><span class='line'>  }
+</span><span class='line'>
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>?&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This controller contains the needed getIndex method and in this method the &lsquo;home&rsquo; view is created and returned. A more advanced method may include a database call</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>public function getIndex()
+</span><span class='line'>  {
+</span><span class='line'>      
+</span><span class='line'>            $view = View::make('home');
+</span><span class='line'>
+</span><span class='line'>          $content = Content::where('display', '=', 1)-&gt;get();
+</span><span class='line'>          $view-&gt;with('content', $content);
+</span><span class='line'>
+</span><span class='line'>          return $view;
+</span><span class='line'>            
+</span><span class='line'>  }</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The get index method now queries the database for all content that should be displayed. The data is passed to the created view using the &lsquo;with&rsquo; method. The first parameter is the variable name the view will use to refer to the data and the second parameter is the data itself. A more advanced view would include many more methods to handle several associated request. An account controller could have sign in, sign out, get sign in page, and get account methods.</p>
+
+<p>Another useful construct that can be inserted into controller methods in the Redirect. Redirects do just what their name says, redirected. One possible use case is redirection after authentication.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>public function postSignIn(){
+</span><span class='line'>  $email = Input::get('email');
+</span><span class='line'>  $password = Input::get('password');
+</span><span class='line'>
+</span><span class='line'>  if (Auth::attempt(array('email' =&gt; $email, 'password' =&gt; $password)))
+</span><span class='line'>  {
+</span><span class='line'>      Session::flash('message', 'You have been logged in.');
+</span><span class='line'>      return Redirect::intended(route('home'));
+</span><span class='line'>  }
+</span><span class='line'>
+</span><span class='line'>  Session::flash('message', 'Your credentials are invalid.');
+</span><span class='line'>  return Redirect::to(route('display_login'));
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>These are the structures that I found most useful for my project. I valued the control found with explicitly defining routes to controllers. Laravel offers many other variation and tools with controller that are detailed <a href="http://laravel.com/docs/4.2/controllers" title="Laravel Controllers">here</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Laravel and Blade]]></title>
+    <link href="http://boldlycoding.com/blog/2015/02/16/laravel-and-blade/"/>
+    <updated>2015-02-16T13:38:10-05:00</updated>
+    <id>http://boldlycoding.com/blog/2015/02/16/laravel-and-blade</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<h2>What is Blade?</h2>
+
+<p>Blade is a template engine that comes with the Laravel framework. Blade is incredibly useful because it provides control structures, layout inheritance, and function definitions. The control structures keep to code simple, but retain the power of raw PHP control structures.</p>
+
+<h2>How to use it.</h2>
+
+<p>The simplest Blade structure allow for the echoing of information. In addition to echoing the information, Laravel escapes the content to prevent malicious code execution. With raw PHP, the opening and closing tags would be needed in addition to a function call for output cleaning. The blade syntax is</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Blade content {{ $content }} </span></code></pre></td></tr></table></div></figure>
+
+
+<p>Blade allows for extension of this syntax with existence checking. This becomes very useful when outputting content from a database. If there are nulls or empty strings, the defined string will be output.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>{{ isset($content) ? $content : 'No Content' }} </span></code></pre></td></tr></table></div></figure>
+
+
+<p>Beyond these simple structures, Blade provides support for more advanced control structures like if statements and loops. To construct an if statement (and declare other Blade keywords), the @ symbol us used</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>@if ($fish == "1")
+</span><span class='line'>    One Fish
+</span><span class='line'>@elseif ($fish == "2")
+</span><span class='line'>    Two Fish
+</span><span class='line'>@elseif ($fish == "red")
+</span><span class='line'>    Red Fish
+</span><span class='line'>@elseif ($fish == "blue")
+</span><span class='line'>    Blue Fish
+</span><span class='line'>@else
+</span><span class='line'>    Not a fish
+</span><span class='line'>@endif</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Blade also provide support for for, foreach, forelse, and while loops. The foreach loop is frequently used after fetching information from the database to output it to the user.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>@foreach ($all_fish as fish)
+</span><span class='line'>    &lt;p&gt;{{ $fish-&gt;type }} Fish&lt;/p&gt;
+</span><span class='line'>@endforeach </span></code></pre></td></tr></table></div></figure>
+
+
+<p>Although no significant additional functionality is provided, the blade structures ensure the code remains clean and readable. This will improve debug time and improvements and maintenance in the future.</p>
+
+<p>Blade is also very powerful because it provides support for inheritance of layouts. For instance, a a base layout could be defined with all the basic information. The HTML tags, head tags, style information needed for all pages, and anything else that can be included for all pages. This base layout can be included in other layouts, moreover content can be injected from the child to the parent layout. A base layout could be defined, another layout for generic content pages and additional layouts for specialized content all injecting content into the base layout and inheriting its structure.</p>
+
+<p>The parent layout</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;!-- views/layouts/base.blade.php --&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;html&gt;
+</span><span class='line'>  &lt;head&gt;
+</span><span class='line'>      &lt;link rel="stylesheet" type="text/css" href="style_default.css"&gt;
+</span><span class='line'>      @yield('css')
+</span><span class='line'>  &lt;/head&gt;
+</span><span class='line'>    &lt;body&gt;
+</span><span class='line'>        &lt;div class="container"&gt;
+</span><span class='line'>            @yield('content')
+</span><span class='line'>        &lt;/div&gt;
+</span><span class='line'>    &lt;/body&gt;
+</span><span class='line'>&lt;/html&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>A child layout</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>@extends('base.master')
+</span><span class='line'>
+</span><span class='line'>@section('css')
+</span><span class='line'>    &lt;link rel="stylesheet" type="text/css" href="special_styles.css"&gt;
+</span><span class='line'>@stop
+</span><span class='line'>
+</span><span class='line'>@section('content')
+</span><span class='line'>    &lt;p&gt;This is my body content.&lt;/p&gt;
+</span><span class='line'>@stop</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally, Blade support definition of custom function in the same way a function can be defined in PHP. The defined function is access using the @ sign, like when using other Blade keywords. This is very useful when defined common formatting or output procedures, like formatting a MySQL DATETIME for output to the user. The following piece of code will take a date/time input and convert it to a date formatted as a two digit month, a slash, and then the two digit day.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Blade::extend(function($view, $compiler)
+</span><span class='line'>{
+</span><span class='line'>    $pattern = $compiler-&gt;createMatcher('datetime');
+</span><span class='line'>
+</span><span class='line'>    return preg_replace($pattern, '$1&lt;?php echo $2-&gt;format(\'m/d\'); ?&gt;', $view);
+</span><span class='line'>});</span></code></pre></td></tr></table></div></figure>
+
+
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Twitter Trends]]></title>

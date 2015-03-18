@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Big Data | To Boldly Code...]]></title>
   <link href="http://boldlycoding.com/blog/categories/big-data/atom.xml" rel="self"/>
   <link href="http://boldlycoding.com/"/>
-  <updated>2015-02-11T02:08:17-05:00</updated>
+  <updated>2015-03-18T02:58:09-04:00</updated>
   <id>http://boldlycoding.com/</id>
   <author>
     <name><![CDATA[George McDaid]]></name>
@@ -12,6 +12,247 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Collecting and Processing Tweets]]></title>
+    <link href="http://boldlycoding.com/blog/2015/03/17/collecting-and-processing-tweets/"/>
+    <updated>2015-03-17T17:55:55-04:00</updated>
+    <id>http://boldlycoding.com/blog/2015/03/17/collecting-and-processing-tweets</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<p><img class="center" src="/images/tweet_process.png" width="1000" height="400" title="Tweet collection and processing" ></p>
+
+<h2>Collecting the Tweets</h2>
+
+<p>Tweet collection is driven the Apache project Flume. Flume collects, aggregates, and moves variable amounts of streaming data. The data can be from a variety of sources including server and other logs. Flume overall is very flexible and customisable based on the particular application. It not only support multiple sources, but also multiple processing mediums, or channels. Here channels are where the data in question is stored before being being written to its final destination, or sink. Flume captures data from a source, and stores it in a channel before finally writing the data to the sink. Channels can be in memory, in a file, or files, or a combination of the two. The logical structure of the source, channel and sink, is an agent. A flume agent that captures web server data and writes it to a Hadoop HDFs would logically look like the following</p>
+
+<p><img class="center" src="/images/flume_agent.png" width="540" height="440" title="A typical flume agent" ></p>
+
+<p>As discussed in a previous post, I have installed Cloudera&rsquo;s CDH in my cluster. The CDH allows for convenient definition of Flume Agent. After selecting the Flume service and clicking the Configuration tab, property Configuration File can be searched for. My agent definition was</p>
+
+<pre><code>TwitterAgent.sources = Twitter
+TwitterAgent.channels = MemChannel
+TwitterAgent.sinks = HDFS
+
+TwitterAgent.sources.Twitter.type = com.boldlycoding.twitterstreaming.TrendingStream
+TwitterAgent.sources.Twitter.channels = MemChannel
+
+TwitterAgent.sinks.HDFS.channel = MemChannel
+TwitterAgent.sinks.HDFS.type = hdfs
+TwitterAgent.sinks.HDFS.hdfs.path = hdfs://typhlosion:8020/user/flume/tweets/%Y/%m/%d/%H/
+TwitterAgent.sinks.HDFS.hdfs.fileType = DataStream
+TwitterAgent.sinks.HDFS.hdfs.writeFormat = Text
+TwitterAgent.sinks.HDFS.hdfs.batchSize = 80
+TwitterAgent.sinks.HDFS.hdfs.rollSize = 0
+TwitterAgent.sinks.HDFS.hdfs.rollCount = 100
+TwitterAgent.sinks.HDFS.hdfs.rollInterval = 120
+TwitterAgent.sinks.HDFS.hdfs.minBlockReplicas = 1
+
+TwitterAgent.channels.MemChannel.type = memory
+TwitterAgent.channels.MemChannel.capacity = 10000
+TwitterAgent.channels.MemChannel.transactionCapacity = 100
+</code></pre>
+
+<p>This Flume agent definition uses a custom flume source defined in my uploaded jar. The channel is a Memory Channel, meaning all the tweets will be placed in memory before being written to the sink, which here is the Hadoop HDFS. All of the tweets are written in a text format. The agent also writes 100 tweets to each file before starting a new file, and will automatically close a file after 2 minutes even if 100 tweets have not been written. The memory channel is defined with a capacity of 10,000 tweets and 100 tweets will be move in/out of the channel at a time. The HDFS path parameter defines where on the HDFS the files will be written and the percent signs and characters at the end of the path indicate the directories will be created based on the timestamp of each tweet.</p>
+
+<p>To do the actual capturing, processing, and dispatching to the memory channel, I have defined a custom Flume source by extending the Flume abstract source, access credentials withheld.</p>
+
+<pre><code>public class TrendingStream extends AbstractSource implements EventDrivenSource, Configurable {
+
+    Authentication auth;
+
+    @Override
+    public void start() {
+        final ChannelProcessor channel = getChannelProcessor();
+        final BlockingQueue&lt;String&gt; queue = new LinkedBlockingQueue&lt;String&gt;(10000);
+        StatusesFilterEndpoint endpoint = new StatusesFilterEndpoint();
+        ArrayList&lt;String&gt; filter_trends = Lists.newArrayList("college", "university", "uni", "school", "higher education", "grad school");
+        endpoint.trackTerms(filter_trends);
+        Client client = new ClientBuilder()
+                .hosts(Constants.STREAM_HOST)
+                .endpoint(endpoint)
+                .authentication(auth)
+                .processor(new StringDelimitedProcessor(queue))
+                .build();
+        client.connect();
+        final JsonParser jsonParser = new JsonParser();
+        final Map&lt;String, String&gt; headers = new HashMap&lt;String, String&gt;();
+
+        TwitterThread tweam = new TwitterThread() {
+
+            @Override
+            public void run() {
+                for (int msgRead = 0; msgRead &lt; 1000; msgRead++) {
+                    try {
+                        String msg = queue.take();
+                        msg = msg.replace("\n", "").replace("\r", "").replace("\\n", "");
+                        msg = msg.replaceAll("\\\\\"", "");
+                        msg = msg.replaceAll("\\\\","");
+                        msg = msg.replaceAll("/","");
+                        //System.out.println(msg);
+                        JsonObject user = jsonParser.parse(msg)
+                                .getAsJsonObject().get("user")
+                                .getAsJsonObject();
+                        String zone = user.get("time_zone").getAsString();
+                        //System.out.println(zone);
+                        msg = msg.trim();
+                        headers.put("timestamp", String.valueOf(new Date().getTime()));
+                    Event event = EventBuilder.withBody(msg.getBytes(), headers);
+                    channel.processEvent(event);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(TrendingStream.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (UnsupportedOperationException ex) {
+                        msgRead--;
+                    } catch (NullPointerException ex) {
+                        msgRead--;
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException ex1) {
+                            System.out.println("Thread Interrupt");
+                        }
+                    }
+
+                    if (msgRead &lt;= -10000) {
+                        break;
+                    }
+
+                }
+            }
+        };
+
+        tweam.run();
+
+        super.start();
+
+    }
+
+    @Override
+    public void configure(Context cntxt) {
+        auth = new OAuth1("consumerKey", "consumerSecret", "token", "tokenSecret");
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+    }
+}
+</code></pre>
+
+<p>The source begins by defining a Flume channel processor, blocking queue, and a filtering status endpoint. The processor and queue and more obvious. The filtering status endpoint captures live tweets, and applies a set of filtering terms. A tweets must contain all the terms in one of the items in the set. For instance, referencing the set in the previous code snippet, a tweet with the work college would be captured. A tweet containing higher education would be captured as well, but a tweet only containing the word higher or education would not.</p>
+
+<p>In this code snippet the loop would capture 1000 tweets before stopping. When a tweet is captured the code filters out backslashes, double backslashes, forward slashes, and new lines from the JSON data format of the tweet. This is important because if they are not filtered out it causes the JSON parser to throw and error and is unable to process the tweets. This was one of the more difficult points to discover, and filtering out all the necessary characters was an extremely iterative process. After the tweet is cleaned, the tweet is checked for a valid (non-blank) time zone which allows for regionalization of the sentiment data (It is interesting to note that since Twitter is built on Ruby all of the timezone options are the same as those that are found in Ruby). Through the course of the study I have noted that about half of tweets have an invalid time zone. If a valid time zone is not found, the loop is set back an iteration. This allows for the specified number of tweets to be captured. Also, to avoid an infinite loop the loop control variable is check for a large negative value, and a break is issued if a large value is found. This should be relative to the number of tweets that need to be captured. Finally, the tweet data is stamped with a timestamp and it is passed to the channel processor. The settings in the Flume Agent configuration then control how the channel handles placing the events into the sink. This was another very difficult part of the project to configure as the channel must be set up so it is not overwhelmed by the speed of incoming tweets.</p>
+
+<h2>Processing the Tweets</h2>
+
+<p>To process the sentiment data in the Hadoop HDFS Hive (provided with Cloudera CDH) is used. Hive is an Apache project that provides a SQL interface for querying the Hadoop HDFS. The run the SQL queries, Hive runs MapReduce jobs taking advantage of the other distributed Hadoop component. The following Hive script analyzes the Tweet data and produces several new tables the last of which contains the required sentiment data.</p>
+
+<pre><code>DROP TABLE tweets_raw;
+DROP TABLE dictionary;
+DROP TABLE time_zone_map;
+DROP VIEW tweets_simple;
+DROP VIEW l1;
+DROP VIEW l2;
+DROP VIEW l3;
+DROP TABLE tweets_sentiment;
+DROP TABLE tweetsbi;
+
+CREATE EXTERNAL TABLE tweets_raw (
+   id BIGINT,
+   created_at STRING,
+   source STRING,
+   favorited BOOLEAN,
+   retweet_count INT,
+   retweeted_status STRUCT&lt;
+      text:STRING,
+      user:STRUCT&lt;screen_name:STRING,name:STRING&gt;&gt;,
+   entities STRUCT&lt;
+      urls:ARRAY&lt;STRUCT&lt;expanded_url:STRING&gt;&gt;,
+      user_mentions:ARRAY&lt;STRUCT&lt;screen_name:STRING,name:STRING&gt;&gt;,
+      hashtags:ARRAY&lt;STRUCT&lt;text:STRING&gt;&gt;&gt;,
+   text STRING,
+   user STRUCT&lt;
+      screen_name:STRING,
+      name:STRING,
+      friends_count:INT,
+      followers_count:INT,
+      statuses_count:INT,
+      verified:BOOLEAN,
+      utc_offset:STRING, -- was INT but nulls are strings
+      time_zone:STRING&gt;
+)
+ROW FORMAT SERDE 'com.cloudera.hive.serde.JSONSerDe'
+LOCATION '/user/flume/tweets'
+;
+
+-- create sentiment dictionary
+CREATE EXTERNAL TABLE dictionary (
+    type string,
+    length int,
+    word string,
+    pos string,
+    stemmed string,
+    polarity string
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' 
+STORED AS TEXTFILE
+LOCATION '/user/home/gmcdaid/data/dictionary';
+
+CREATE EXTERNAL TABLE time_zone_map (
+    time_zone string,
+    country string,
+    notes string
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' 
+STORED AS TEXTFILE
+LOCATION '/user/home/gmcdaid/data/time_zone_map';
+
+CREATE VIEW tweets_simple AS
+SELECT
+  id,
+  cast ( from_unixtime( unix_timestamp(concat( '2015 ', substring(created_at,5,15)), 'yyyy MMM dd hh:mm:ss')) as timestamp) ts,
+  text,
+  time_zone_map.country
+FROM tweets_raw
+JOIN time_zone_map ON tweets_raw.user.time_zone = time_zone_map.time_zone
+;
+
+create view l1 as select id, words from tweets_simple lateral view explode(sentences(lower(text))) dummy as words;
+create view l2 as select id, word from l1 lateral view explode( words ) dummy as word ;
+
+create view l3 as select 
+    id, 
+    l2.word, 
+    case d.polarity 
+      when  'negative' then -1
+      when 'positive' then 1 
+      else 0 end as polarity 
+ from l2 left outer join dictionary d on l2.word = d.word;
+
+create table tweets_sentiment stored as orc as select 
+id, 
+case 
+when sum( polarity ) &gt; 0 then 'positive' 
+when sum( polarity ) &lt; 0 then 'negative'  
+else 'neutral' end as sentiment 
+from l3 group by id;
+
+CREATE TABLE tweetsbi 
+STORED AS ORC
+AS
+SELECT 
+  t.*,
+  case s.sentiment 
+    when 'positive' then 2 
+    when 'neutral' then 1 
+    when 'negative' then 0 
+  end as sentiment  
+FROM tweets_simple t JOIN tweets_sentiment s on t.id = s.id;
+</code></pre>
+
+<p>This script has a multitude of intermediate steps. It begins by creating a table containing all the raw Twitter information. The accommodate all the nested structures in the JSON Hive provides ARRAY and STRUCT structures. The table specifies a SERDE and LOCATION, the location leaves all the data on the file system instead of importing it. The SERDE clause instructs the table to parse the data using the specified serializer/deseralizer. This is a generic piece of code provided by Cloudera to process JSON data. Next, the script creates the dictionary and time zone tables. The dictionary contains all of the words to be analysed and their associated sentiment values. This is sometimes referred to as a lexicon. The time zone table maps the twitter time zones to generic regions. The list was created using the list of time zones that Ruby supports. After this, the script creates a simpler tweets table containing only the required information. Following this three lateral views are created to analyse the twitter data using the information from the dictionary file. The final two steps reorganize the data and create more readable tables. Positive sentiment becomes a 2, neutral sentiment is a 1, and negative sentiment is a 0. Following processing all of the tweet data, the data can be presented, in a later post I will discuss using PHP and Google charts to present the data.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Twitter Trends]]></title>
@@ -398,110 +639,6 @@ cat /var/log/mysql/error.log
 
 <pre><code class="`"> Include /etc/phpmyadmin/apache.conf
 </code></pre></li>
-</ol>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Cluster Machine Setup and Prep]]></title>
-    <link href="http://boldlycoding.com/blog/2014/12/21/cluster-machine-setup-and-prep/"/>
-    <updated>2014-12-21T07:31:53-05:00</updated>
-    <id>http://boldlycoding.com/blog/2014/12/21/cluster-machine-setup-and-prep</id>
-    <content type="html"><![CDATA[<!-- more -->
-
-
-<h2>Installing the OS</h2>
-
-<p>All machines in the cluster will use Cloudera Manager, mentioned in a previous post. Cloudera Manager <a href="http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_ig_cm_requirements.html" title="Cloudera Manager Requirements">requires</a> that all machines running the manager, and being managed, have a supported 64-bit OS installed. The following process should be followed on all nodes in the cluster</p>
-
-<ol>
-<li><p>Through experience I have found that CDH, a component of Cloudera Manager, runs smootly on Ubuntu 12.04 (Precise). Precise can be downloaded <a href="http://releases.ubuntu.com/12.04/" title="Ubuntu 12.04 Download">here</a>. For this project, a server installation was appropriate. There are many web interfaces and no substantial need for a desktop interface.</p></li>
-<li><p>Start the OS installation and configure appropriate regional settings including language and keyboard layout.</p></li>
-<li><p>The installation will ask for a hostname. All machines in the cluster should have a unique hostname. In my cluster I configured the machines as typhlosion, quilava and cyndaquil where typhlosion is the master of the cluster and the other two machines are slaves.</p>
-
-<p> <img class="center" src="/images/os/3_hostname.png" width="550" height="750" title="Set up each host with an appropiate hostname" ></p></li>
-<li><p>The Ubuntu installation will then prompt for a username.</p>
-
-<p> <img class="center" src="/images/os/4_username.png" width="550" height="750" title="Enter an appropriate username" ></p></li>
-<li><p>Enter and verify a memorable password.</p>
-
-<p> <img class="center" src="/images/os/5_password.PNG" width="550" height="750" title="Enter an appropriate password" ></p></li>
-<li><p>For my project, I chose not to encrypt my home directory.</p>
-
-<p> <img class="center" src="/images/os/6_encrypt.PNG" width="550" height="750" title="Encrypt your directory?" ></p></li>
-<li><p>An appropiate time zone should then be selected. I have seen references to problem occurring with CDH/Cloudera Manager when configuration options related to time are not set correctly, so ensure the correct time zone is selected on all machines in the cluster.</p>
-
-<p> <img class="center" src="/images/os/7_timezone.PNG" width="550" height="750" title="Set and appropiate time zone" ></p></li>
-<li><p>On the cluster machines, I elected to use the entire disk without LVM for simplicity&rsquo;s sake. Following this step you will need to confirm the disk to partition.</p>
-
-<p> <img class="center" src="/images/os/8_lvm.PNG" width="550" height="750" title="Use LVM?" ></p></li>
-<li><p>Finally, the installation will confirm and then write all changes to disk. Assuming everything on your screen is correct, select yes and wait for the files to be written.</p>
-
-<p> <img class="center" src="/images/os/9_write.PNG" width="550" height="750" title="Write changes to disk" ></p></li>
-<li><p>Following a lengthy file write, the installation will ask about an HTTP proxy. This was not required for my set up and thus I left the field blank. The installation will then continue writing files.</p></li>
-<li><p>The installation now asks about Automatic Updating. Like many tech envoinments where change is not tolerated, Cloudera Manager and Hadoop are no different. Hadoop particularly does not deal well with changes in its environment. Keeping this in mind I selected no automatic updating to use my own discretion, and the installation continued.</p>
-
-<p><img class="center" src="/images/os/11_updates.PNG" width="550" height="750" title="No updates!" ></p></li>
-<li><p>Next, software needs to be selected for installation. The spacebar is used for selection and enter confirms selections. The selections will differ based on the type of cluster node. The OpenSSH server <strong>must</strong> be installed on <strong>all</strong> nodes in the cluster. Cloudera Manager and Hadoop use SSH. The LAMP server package should be installed on the master of the cluster (typhlosion in my case) if, like myself, MySQL is more appealing than a PostgreSQL database. Cloudera Manager can store all of its data in a MySQL database and the backup agent Bacula (to be described later) requires a MySQL installation. The slaves of the cluster do not require LAMP to be installed but if more then one of the components are needed, it is not a bad idea to install those now. For my cluster, I only need MySQL on the slaves, so I install that separately to reduce the number of extraneous services. Of course, if any of the other listed components are needed, they should be selected for installation now.</p>
-
-<p><img class="center" src="/images/os/12_software.PNG" width="550" height="750" title="Software selection" ></p></li>
-<li><p>If installing MySQL, the installation will display a prompt for a root user password. In this test cluster, I use the same password for all services to simplify the setup process. After entering the password, the installer will request confirmation and then continue writing files.</p>
-
-<p><img class="center" src="/images/os/13_mysqlpassword.PNG" width="550" height="750" title="Enter a MySQL password" ></p></li>
-<li><p>Finally, assuming no other OS is detected, select Yes and GRUB will be installed directly to the MBR. I do not recommend running multiple operating systems in a server environment. After GRUB is written the installation will complete and the machine will reboot after Continue is selected.</p>
-
-<p><img class="center" src="/images/os/14_grub.PNG" width="550" height="750" title="Install GRUB" ></p></li>
-</ol>
-
-
-<h2>Configuring the OS</h2>
-
-<p>All nodes in the cluster must be able to communicate with the other nodes. To simplify communication among the cluster nodes, each will be configured with a static IP address. The addresses will then be added to each node&rsquo;s <em>hosts</em> file.</p>
-
-<ol>
-<li><p>To configure a static IP address the following command should be issued:</p>
-
-<pre><code class="`"> sudo nano /etc/network/interfaces
-</code></pre>
-
-<p> Change the file to (with appropriate addresses for the network):</p>
-
-<pre><code class="`"> auto lo
- iface lo inet loopback
-
- iface eth0 inet static
- address 10.1.0.113
- gateway 10.1.0.1
- netmask 255.255.255.0
- dns-nameservers 8.8.8.8 8.8.4.4
-</code></pre></li>
-<li><p>Reboot the machine</p></li>
-<li><p>Issue the following command. If everything was configured properly, there will not be any packet loss.</p>
-
-<pre><code class="`"> ping -c 5 www.google.com
-</code></pre></li>
-<li><p>Repeat the process with the other nodes in the cluster.</p></li>
-<li><p>After rebooting the other nodes, the <em>hosts</em> files will need to be edited. On each node issue the following command:</p>
-
-<pre><code class="`"> sudo nano /etc/hosts
-</code></pre>
-
-<p> Change the file to:</p>
-
-<pre><code class="`"> 127.0.0.1       localhost
- 10.0.2.15       typhlosion typhlosion
-</code></pre></li>
-<li><p>Attempt to ping nodes from each other using the command</p>
-
-<pre><code class="`"> ping -c 5 hostname
-</code></pre></li>
-<li><p>For steps later in the cluster setup, it is helpful to have tmux installed. Tmux is a terminal multiplexer and allows the control of multiple programs from one terminal. Also, tmux will save your session in the event of a disconnect. This is very help when installing Cloudera Manager which does not easily tolerate interuptions to the install process. To insatll tmux, run</p>
-
-<pre><code class="`"> sudo apt-get install tmux
-</code></pre>
-
-<p> After the OSs on all the nodes in the cluster have been configured, the utility applications phpMyAdmin and Bacula can be installed. PhpMyAdmin will speed up database setup. Bacula creates a backup of the file system that can be restored if something goes wrong later when making changes. Following the installation of these tools, Cloudera Manager can be installed.</p></li>
 </ol>
 
 ]]></content>
