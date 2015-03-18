@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Laravel as an Enterprise PHP Framework - To Boldly Code&#8230;</title>
+  <title>Limitations and Problems With the Twitter Process - To Boldly Code&#8230;</title>
   <meta name="author" content="George McDaid">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://boldlycoding.com/blog/2015/02/06/laravel-as-an-enterprise-php-framework">
+  <link rel="canonical" href="http://boldlycoding.com/blog/2015/03/18/limitations-and-problems-with-the-twitter-process">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="To Boldly Code..." type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://boldlycoding.com/blog/2015/02/06/laravel-as-an-enterprise-php-framework">
-  <meta property="og:title" content="Laravel as an Enterprise PHP Framework - To Boldly Code...">
+  <meta property="og:url" content="http://boldlycoding.com/blog/2015/03/18/limitations-and-problems-with-the-twitter-process">
+  <meta property="og:title" content="Limitations and Problems With the Twitter Process - To Boldly Code...">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.0.3.min.js"></script>
@@ -109,13 +109,13 @@
 
 
 
-<time class='entry-date' datetime='2015-02-06T20:45:11-05:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>6</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>8:45 pm</span></time>
+<time class='entry-date' datetime='2015-03-18T03:05:07-04:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>3:05 am</span></time>
         
       </p>
     
     
     <h1 class="entry-title" itemprop="name headline">
-        Laravel as an Enterprise PHP Framework
+        Limitations and Problems With the Twitter Process
         
     </h1>
     
@@ -125,33 +125,15 @@
 <div class="entry-content clearfix" itemprop="articleBody description"><!-- more -->
 
 
-<h2>Why Did I Start This?</h2>
+<h2>Capturing Limitations</h2>
 
-<p>As a senior project at Lock Haven University, I intend to study Laravel as an enterprise PHP framework. Frameworks claim to promote consistency, reduce repetition, simplify implementation, and speed development. I intend to evaluate these claims using knowledge gained from past internships and development experiences. I will conduct my evaluation by implementing a website using the Laravel framework and comparing the experience to past projects.</p>
+<p>There are a few limitations and problem with the currently implemented Twitter capturing and refinement process. The first problem is with the Flume Agent. When storing tweets, unless the configuration is modified they will be stored in thee same folder. This is not suitable if comparing the public sentiment on several topic. To remedy this situation the configuration must be changed for each new topic that tweets are captured for. In the future, it would be beneficial to in some way allow the Flume Twitter source to control which folder the tweets go into. The source could specify a different folder for each topic that is captured. Although, they source will also need to be modified to allow for capturing on several topic areas. Rate limits will need to considered, to ensure they are not violated, but when capturing on multiple topics it is best for several agents to run. Another limitation of the Twitter source is the filter terms. As implemented the filter terms can not adapt and do not learn. To adequately capture opinion on a topic all relevant search terms must be included. If an unforeseen filter term is omitted, a vast portion of the opinion on an issue could be unintentionally excluded. It would be more effective to analyse tweets and dynamically predict which terms should be tracked through use of a hash map or database structure.</p>
 
-<h2>What is Laravel? </h2>
+<h2>Processing Limitations</h2>
 
-<p><img class="right" src="/images/laravel.jpg" width="250" height="150" title="Laravl logo" alt="Laravel logo">Laravel has come into popularity quite recently. Taylor Otwell initially released Laravel in 2012. As of November 2014, GitHub indicates that the Laravel framework is the most popular PHP project. During the development of Laravel, features were drawn from many other popular frameworks including Yii, ASP.NET MVC, Ruby on Rails, Sinatra, and CodeIgniter. Laravel is a MVC framework, with distinct PHP files for each component.</p>
+<p>After tweets have been captured, there are also a few problems and limitations with the processing methods. The largest limitation factor of the sentiment extraction process is the dictionary, or lexicon. The sentiment is going to be as accurate as the lexicon. The more correct values in the lexicon, the more accurate the sentiment is going to be. Society itself imposes problems on this. Language and society is constantly changing. Language constructs mean different things in different time periods and continue to evolve as we move into the future. The lexicon must also include terms for the topic in question. This, combined with changing language, means to accurately reflect sentiment the lexicon must be constantly maintained and revised. The size of this task aside, it is also critical to have access to this data, which is not the case for all individuals. Many datasets incur a cost that many cannot afford. This includes financial and technological, or computational costs. Computational costs are one more limitation of the process. To accurately describe sentiment on an issues, or topic, the processing power, disk space, memory capacity, and network bandwidth must all accommodate the volume of information needed. It become very difficult to create an environment where all of these factors completely cater to the current problem. During the course of this study memory in particular was a problem. It needed to accommodate all of the required services as well as the tweets in the Flume channel. Extensive configuration was required before a balance was found between all components that required memory.</p>
 
-<h2>Laravel&rsquo;s Features</h2>
-
-<p>Laravel includes many features to speed the development process.</p>
-
-<ul>
-<li>MVC, as previously mentioned, it is a Model View Controller Framework</li>
-<li>Routing, to direct incoming requests to appropriate views</li>
-<li>Eloquent ORM, an objected oriented interface for DB tables</li>
-<li>Migrations, version control for databases</li>
-<li>Seeding, invokable scripts to inject test data</li>
-<li>Blade, a template engine that supports inheritance of layouts</li>
-</ul>
-
-
-<p>There are many other features beyond these, but this list includes some of the most notable items. Many of these features are reflected by the directory structure of the application (thus embracing simplicity).</p>
-
-<p><img class="center" src="/images/laravel_app_structure.png" width="420" height="340" title="Laravel directory structure" ></p>
-
-<p>There are directories to house the models, views, and controllers. The database migrations and seeders also reside in their own directories. In the root of the application directory, there is a routes PHP file. This file has all of the routing information for the website which routes requests to appropriate controllers. From conceptual to physical design, Laravel is geared towards development.</p>
+<p>There are many more limitations of the Twitter process that could be expounded upon, but these are the most pressing and interesting. In the future, progressive improvement could lead to a very powerful and impressive system.</p>
 </div>
 
 
@@ -166,13 +148,13 @@
 
 
 
-<time class='entry-date' datetime='2015-02-06T20:45:11-05:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>6</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>8:45 pm</span></time>
+<time class='entry-date' datetime='2015-03-18T03:05:07-04:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>3:05 am</span></time>
       
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/is-2015/'>is 2015</a>, <a class='category' href='/blog/categories/laravel/'>laravel</a>
+    <a class='category' href='/blog/categories/big-data/'>big data</a>, <a class='category' href='/blog/categories/capstone-2015/'>capstone 2015</a>, <a class='category' href='/blog/categories/cloudera/'>cloudera</a>
   
 </span>
 
@@ -181,7 +163,7 @@
     
       <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://boldlycoding.com/blog/2015/02/06/laravel-as-an-enterprise-php-framework/" data-via="" data-counturl="http://boldlycoding.com/blog/2015/02/06/laravel-as-an-enterprise-php-framework/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://boldlycoding.com/blog/2015/03/18/limitations-and-problems-with-the-twitter-process/" data-via="" data-counturl="http://boldlycoding.com/blog/2015/03/18/limitations-and-problems-with-the-twitter-process/" >Tweet</a>
   
   
   
@@ -190,10 +172,8 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2014/12/29/installing-cloudera-manager/" title="Previous Post: Installing Cloudera Manager">&laquo; Installing Cloudera Manager</a>
+        <a class="basic-alignment left" href="/blog/2015/03/17/collecting-and-processing-tweets/" title="Previous Post: Collecting and Processing Tweets">&laquo; Collecting and Processing Tweets</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2015/02/10/setting-up-the-development-environment/" title="Next Post: Setting Up The Development Environment">Setting Up The Development Environment &raquo;</a>
       
     </p>
   </footer>
@@ -210,7 +190,7 @@
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/blog/2015/03/18/limitations-and-problems-with-the-twitter-process/">Limitations and Problems With the Twitter Process</a>
+    <a class="list-group-item active" href="/blog/2015/03/18/limitations-and-problems-with-the-twitter-process/">Limitations and Problems With the Twitter Process</a>
     
     <a class="list-group-item " href="/blog/2015/03/17/collecting-and-processing-tweets/">Collecting and Processing Tweets</a>
     

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Cloudera | To Boldly Code...]]></title>
   <link href="http://boldlycoding.com/blog/categories/cloudera/atom.xml" rel="self"/>
   <link href="http://boldlycoding.com/"/>
-  <updated>2015-03-18T02:59:51-04:00</updated>
+  <updated>2015-03-18T03:31:54-04:00</updated>
   <id>http://boldlycoding.com/</id>
   <author>
     <name><![CDATA[George McDaid]]></name>
@@ -12,6 +12,26 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Limitations and Problems With the Twitter Process]]></title>
+    <link href="http://boldlycoding.com/blog/2015/03/18/limitations-and-problems-with-the-twitter-process/"/>
+    <updated>2015-03-18T03:05:07-04:00</updated>
+    <id>http://boldlycoding.com/blog/2015/03/18/limitations-and-problems-with-the-twitter-process</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<h2>Capturing Limitations</h2>
+
+<p>There are a few limitations and problem with the currently implemented Twitter capturing and refinement process. The first problem is with the Flume Agent. When storing tweets, unless the configuration is modified they will be stored in thee same folder. This is not suitable if comparing the public sentiment on several topic. To remedy this situation the configuration must be changed for each new topic that tweets are captured for. In the future, it would be beneficial to in some way allow the Flume Twitter source to control which folder the tweets go into. The source could specify a different folder for each topic that is captured. Although, they source will also need to be modified to allow for capturing on several topic areas. Rate limits will need to considered, to ensure they are not violated, but when capturing on multiple topics it is best for several agents to run. Another limitation of the Twitter source is the filter terms. As implemented the filter terms can not adapt and do not learn. To adequately capture opinion on a topic all relevant search terms must be included. If an unforeseen filter term is omitted, a vast portion of the opinion on an issue could be unintentionally excluded. It would be more effective to analyse tweets and dynamically predict which terms should be tracked through use of a hash map or database structure.</p>
+
+<h2>Processing Limitations</h2>
+
+<p>After tweets have been captured, there are also a few problems and limitations with the processing methods. The largest limitation factor of the sentiment extraction process is the dictionary, or lexicon. The sentiment is going to be as accurate as the lexicon. The more correct values in the lexicon, the more accurate the sentiment is going to be. Society itself imposes problems on this. Language and society is constantly changing. Language constructs mean different things in different time periods and continue to evolve as we move into the future. The lexicon must also include terms for the topic in question. This, combined with changing language, means to accurately reflect sentiment the lexicon must be constantly maintained and revised. The size of this task aside, it is also critical to have access to this data, which is not the case for all individuals. Many datasets incur a cost that many cannot afford. This includes financial and technological, or computational costs. Computational costs are one more limitation of the process. To accurately describe sentiment on an issues, or topic, the processing power, disk space, memory capacity, and network bandwidth must all accommodate the volume of information needed. It become very difficult to create an environment where all of these factors completely cater to the current problem. During the course of this study memory in particular was a problem. It needed to accommodate all of the required services as well as the tweets in the Flume channel. Extensive configuration was required before a balance was found between all components that required memory.</p>
+
+<p>There are many more limitations of the Twitter process that could be expounded upon, but these are the most pressing and interesting. In the future, progressive improvement could lead to a very powerful and impressive system.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Collecting and Processing Tweets]]></title>
@@ -598,49 +618,6 @@ cat /var/log/mysql/error.log
 
 
 <p>This covers a very basic restoration process. Documentation for the restore command exists here, for more advanced needs.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Installing phpMyAdmin]]></title>
-    <link href="http://boldlycoding.com/blog/2014/12/24/installing-phpmyadmin/"/>
-    <updated>2014-12-24T13:30:41-05:00</updated>
-    <id>http://boldlycoding.com/blog/2014/12/24/installing-phpmyadmin</id>
-    <content type="html"><![CDATA[<!-- more -->
-
-
-<p>phpMyAdmin simplies the task of database administration for all services running in the cluster. It is also incredibly useful when developing your own applications. Although the command line is still useful for certain DBA tasks, phpMyAdmin makes many faster and easier.</p>
-
-<ol>
-<li><p>To begin the installation issue the following command:</p>
-
-<pre><code class="`"> sudo apt-get install phpmyadmin apache2-utils
-</code></pre>
-
-<p> Installing apache2-utils allows for the configuration of user restrictions if desired later.</p></li>
-<li><p>When prompted, select apache2 to be automatically configured.</p></li>
-<li><p>Next, select Yes when asked if dbconfig-common should configure the database. The administrative password for MySQL will be needed.</p></li>
-<li><p>Navigate to:</p>
-
-<pre><code class="`"> hostip/phpmyadmin
-</code></pre>
-
-<p> The installation should have configured Apache to serve phpMyAdmin. If for some reason phpMyAdmin was inaccessible, inspect:</p>
-
-<pre><code class="`"> /etc/apache2/apache2.conf
-</code></pre>
-
-<p> and add, this line if needed</p>
-
-<pre><code class="`"> Include /etc/phpmyadmin/apache.conf
-</code></pre>
-
-<p> Then restart apache</p>
-
-<pre><code class="`"> Include /etc/phpmyadmin/apache.conf
-</code></pre></li>
-</ol>
-
 ]]></content>
   </entry>
   
