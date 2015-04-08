@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Laravel | To Boldly Code...]]></title>
   <link href="http://boldlycoding.com/blog/categories/laravel/atom.xml" rel="self"/>
   <link href="http://boldlycoding.com/"/>
-  <updated>2015-03-18T03:31:54-04:00</updated>
+  <updated>2015-04-08T02:58:05-04:00</updated>
   <id>http://boldlycoding.com/</id>
   <author>
     <name><![CDATA[George McDaid]]></name>
@@ -12,6 +12,166 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Laravel and Forms]]></title>
+    <link href="http://boldlycoding.com/blog/2015/03/29/laravel-and-forms/"/>
+    <updated>2015-03-29T00:20:38-04:00</updated>
+    <id>http://boldlycoding.com/blog/2015/03/29/laravel-and-forms</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<p>Laravel supports many HTML form functions and adds a great deal of functionality that makes code more concise and reusable.</p>
+
+<h2>Creating Forms</h2>
+
+<p>The most basic of the form functions is that which creates and closes the form. The URL parameter specifies where the submission should be directed to. By default, forms use the POST HTTP verb. This can be changed to GET or any other valid HTTP verb.</p>
+
+<pre><code>Form::open(array('url' =&gt; route('form')))
+    //
+Form::close() 
+</code></pre>
+
+<p>Also by default Laravel embeds a CSRF (Cross Site Request Forgery) token in all forms. This token ensures all form submissions are genuine and from the application. The token can be seen with the following command.</p>
+
+<pre><code>echo Form::token();
+</code></pre>
+
+<p>Some of the basic control function that Laravel supports are</p>
+
+<pre><code>Form::radio('answer_1_radio', '5', false, array('class' =&gt; 'fancy-radio'))
+Form::hidden('date_id', $date)
+Form::label('email', 'E-Mail Address')
+Form::text('username')
+Form::checkbox('name', 'value');
+</code></pre>
+
+<p>All of these basic functions have a very similar signature. The radio button specifies a value on selection and also adds a CSS class. Class classes can be added to any of the other fields in the same way. The arry can also contain other HTML values to add like id.</p>
+
+<p>The select function has a signature that is a bit longer than the other functions</p>
+
+<pre><code>
+Form::select('answer_16_selection', 
+                array(
+                    '0' =&gt; 'Please select an option',
+                    '1' =&gt; 'Web Site',
+                    '2' =&gt; 'Manager',
+                    '3' =&gt; 'Mail',
+                    '4' =&gt; 'Call',
+                    '5' =&gt; 'E-Mail',
+                    '6' =&gt; 'web Search',
+                    '7' =&gt; 'Co-worker',
+                    '8' =&gt; 'Another Course',
+                    '9' =&gt; 'Other'
+                ),
+                0
+
+            ) 
+}}
+</code></pre>
+
+<h2>Form Validation</h2>
+
+<p>Form validation is much more interesting and extensive than form construction. Normally, form validation is placed in the controller associated with a form. The specifics of where to place the validation code and how to route to a form will be discussed in the next section.</p>
+
+<p>For validation begins with definition of the validation rules. Rules are provided to Laravel using an array</p>
+
+<pre><code>$rules = array(
+                'answer_1_text'        =&gt; 'required',
+                'answer_2_selection'   =&gt; 'required',
+                'password'             =&gt; 'required',
+                'password_confirm'     =&gt; 'required|same:password' 
+                'answer_3_text'        =&gt; 'required|integer|min:5|max:20',
+            );
+</code></pre>
+
+<p>Laravel will attempt to generate error messages when validation failes based on the field type and validation requirements. Although these may be sufficient, often more descriptive error messages are desired.</p>
+
+<pre><code>$messages = array(
+                'answer_1_text.required'        =&gt; 'Enter your first name.', 
+                'answer_2_selection.required'   =&gt; 'Please select your title',
+                'password.required'             =&gt; 'Enter a password',
+                'password_confirm.required'     =&gt; 'Please confirm your password'
+                'password_confirm.same'         =&gt; 'The passwords must match',
+                'answer_3_text.min'             =&gt; 'The number must be at least 5',
+                'answer_3_text.max'             =&gt; 'The number must be no more than 20'
+            );
+</code></pre>
+
+<p>To pass the rules with the corresponding error messages, the following command is issued</p>
+
+<pre><code>$validator = Validator::make(Input::all(), $rules, $messages);
+</code></pre>
+
+<p>To test the validator for failure an if-statement is used</p>
+
+<pre><code>if ($validator-&gt;fails()) {
+    $messages = $validator-&gt;messages();
+    return Redirect::to(route('form'))-&gt;withErrors($validator)-&gt;withInput(Input::all());
+}else{
+
+    //Necessary processing of valid inputs
+
+    Session::flash('success', 'Your input has been submitted.');
+    return Redirect::to(route('home')); 
+
+}
+</code></pre>
+
+<p>If there are errors, in this case, the messages are fetched from the validator and the user is redirected to the form with the messages passed to the view. If there is not failure, necessary processing is done and the user is redirected to an appropriate destination.</p>
+
+<p>It is also useful to note that more advanced validation can be applied to filed. One useful construct is conditional validation. Conditional is useful when a field, or set of fields, must be validated when another is present or has a particular value. One relevant use case is shipping and billing information. If the user has billing information that is the same as shipping information typically a box is checked and then there is no need to validate the billing information input fields. However, if the check box is not checked, the fields should be validated. This can be accomplished with code similar to the following. This code would be placed directly after the Validator::make call.</p>
+
+<pre><code>$validator-&gt;sometimes(['answer_13_text', 'answer_15_text', 'answer_16_selection', 'answer_17_text'], 'required', function($input)
+    {
+        return empty($input-&gt;sameas);
+    });
+</code></pre>
+
+<p>This code will validate fields 13, 15, 16, and 17 only if the sameas input field value (a check box) is not present. The validation rules and messages should be passed into the appropriate array regardless of the result of this function.</p>
+
+<h2>Handling Form Requests</h2>
+
+<p>To begin handling form requests, appropriate routes must be declared. Note that the route where submissions are received uses the POST HTTP verb.</p>
+
+<pre><code>Route::get('/2015_survey', array('as' =&gt; 'survey', 'uses' =&gt; 'ContentController@getSurvey'));
+
+Route::post('/2015_survey', array('as' =&gt; 'submitSurvey', 'uses' =&gt; 'ContentController@postSurvey'));
+</code></pre>
+
+<p>Next controller actions must be declared. The code within the post handler should be similar to what was discussed in the previous section.</p>
+
+<pre><code>public function getSurvey(){
+    $view = View::make("2015_survey");
+    return $view;
+}
+
+public function postSurvey(){
+
+    //Rules
+    //Messages
+    //Make the validator
+    //Any conditional validation
+    //Check validator for failure
+
+}
+</code></pre>
+
+<p>Finally the view must be declared the view should use the form construction functions discussed in the first section. There are a few more Laravel function that should be noted at this point. In the code from the previous section, when error occur, they are passed to the view to use the errors the following should be done where the errors need to be displayed</p>
+
+<pre><code>@if ($errors-&gt;has('answer_6_radio')) &lt;span class="red" style="margin-left: 5px;"&gt;$errors-&gt;first('answer_6_radio')&lt;/span&gt; @endif
+</code></pre>
+
+<p>The previous input values are also passed to the view using the code from the previous section to insert these values back into the view</p>
+
+<pre><code>&lt;textarea name="answer_13_textarea" class="input-off"&gt;Input::old('answer_13_textarea')&lt;/textarea&gt;
+</code></pre>
+
+<p>The same construct can be used to pass the value to the value field, this would be passed to a Laravel form component function in the value field.</p>
+
+<p>Overall, these features streamline form creation and processing code. Code with an abundance of if statements is eliminated. The Laravel code is also much more reusable. The built in security features also ease the processing of dealing with HTML forms.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Laravel and Advanced Routing to Controllers]]></title>
@@ -494,95 +654,6 @@ class UserTableSeeder extends Seeder {
 }
 ```
 </code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Setting Up the Development Environment]]></title>
-    <link href="http://boldlycoding.com/blog/2015/02/10/setting-up-the-development-environment/"/>
-    <updated>2015-02-10T20:21:10-05:00</updated>
-    <id>http://boldlycoding.com/blog/2015/02/10/setting-up-the-development-environment</id>
-    <content type="html"><![CDATA[<!-- more -->
-
-
-<h2>What is the Homestead and Vagrant?</h2>
-
-<p>Homestead and Vagrant are two separate products the aid the development of Laravel applications. Before Homestead is discussed in detail, it is useful to have an understanding of Vagrant.</p>
-
-<p>Vagrant is used to automate and simplify the construction of development environments that are portable, lightweight and easy to duplicate. Normally the process of setting up a development environment consists of creating a virtual disk, mounting an ISO, going through an OS installation and installing all required packages (This process frequently needs to be done more than once given how unstable certain development environment are). Vagrant&rsquo;s pre-built environment are known as <em>boxes</em>. After a box is added to the local vagrant installation and started it supports operations including SSH, folder syncing, and web host setup. With vagrant, boxes are downloaded with all the setup done in advance. The box is added to vagrant via command line and the <em>up</em> command is called. The process is much shorter and many degrees simpler then the normal process without vagrant. Since boxes are downloaded already set up, this also creates identical environments if multiple developers are involved on a project. Developing a project in identical environments create code that is much more stable and likely to run in a production environment (If the development environment is similar to that of production). Now that a basic understanding of Vagrant has been established, the Homestead can be discussed.</p>
-
-<p>The Homestead is a Vagrant box produced by Taylor Otwell, the creator of Laravel. Since the Homestead was created by the &ldquo;creator,&rdquo; it is much more stable and well suited to Laravel development than a ordinary setup. Less configuration is all required since much of that has been done already. The Homestead includes Ubuntu 14.04, PHP, Nginx web server, and MySQL, configured and ready for development from startup (There are other included software packages but these are the most notable for my project).</p>
-
-<h2>Installing the Homestead</h2>
-
-<ol>
-<li><p>To use the Homestead, <a href="https://www.virtualbox.org/wiki/Downloads" title="Install VirtualBox">VirtualBox</a> and <a href="http://www.vagrantup.com/downloads.html" title="Install Vagrant">Vagrant</a> must be installed.</p></li>
-<li><p>Next, the Laravel Homestead box must be added to the local vagrant installation. This is done with the following command</p></li>
-</ol>
-
-
-<pre><code>vagrant box add laravel/homestead
-</code></pre>
-
-<ol>
-<li>Following the download of the Homestead box, the Homestead CLI to start, stop, and modify the Homestead box must be installed. This can be done with composer and PHP or by cloning the git repo. I do not like to have a PHP installation running on my local machine, so I insatlled it via the git repo. To clone the repo use the following command (Be sure to clone the repo to a central location where most laraval applications can be found)</li>
-</ol>
-
-
-<pre><code>git clone https://github.com/laravel/homestead.git Homestead
-</code></pre>
-
-<p>To create the Homestead configuration file, run (The file Homestead.yaml will be created in ~/.homestead)</p>
-
-<pre><code>bash init.sh
-</code></pre>
-
-<p>Next the SSH key must be set up using the ssh-keygen command. I selected the default file name and path so the Homestead.yaml file would not need to be edited.</p>
-
-<pre><code>ssh-keygen -t rsa -C "gmcdaid@homestead"
-</code></pre>
-
-<p>After configuring the SSH Key, shared folders need to be set up. Shared folder are shared between the OS and Vagrant Box. A change made on the local file system will be instantly reflected in that of the Vagrant Box. This is a very useful feature included in the Vagrant work flow. To configure folder sharing, edit the Homestead.yaml file to reflect something like the following (The mapping is from the local machine to the vagrant box)</p>
-
-<pre><code>folders:
-    - map: C:\\laravel\\code
-      to: /home/vagrant/Code/
-</code></pre>
-
-<p>Now, sites for the Homestead need to be configured. Sites operate much like Virtual Hosts with Apache. Specified URLs get mapped to a particular directory on the filsystem. When a request is made to a URL the web server on the Homestead box will server pages in the specified directory. Mapping for sites is similar to mapping for folders</p>
-
-<pre><code>sites:
-    - map: homestead.app
-      to: /home/vagrant/Code/laravel/public
-</code></pre>
-
-<p>Both sites and folders can have multiple entries. And something found in folders does not need to be in sites. If PHP scripts need to be run but not in a web browser, a folder mapping can be created without a site map.</p>
-
-<p>The only software package not included in the Homstead which is necessary to my personal work flow is phpMyAdmin. Luckily, it was not hard to install. (The install process assumes Laravel projects are in /home/vagrant/Code)</p>
-
-<p>First run</p>
-
-<pre><code>sudo apt-get install phpmyadmin (Do not select apache or lighttpd, just continue)
-</code></pre>
-
-<p>Then</p>
-
-<pre><code>cd ~/Code &amp;&amp; serve phpmyadmin.app /usr/share/phpmyadmin/
-</code></pre>
-
-<p>Finally, the following should be added to the hosts file on the main machine</p>
-
-<pre><code>127.0.0.1 phpmyadmin.app
-</code></pre>
-
-<p>Start the Homestead box with</p>
-
-<pre><code>vagrant up
-</code></pre>
-
-<p>The phpMyAdmin interface should now be available at <a href="http://phpmyadmin.app:8000/" title="phpMyAdmin">http://phpmyadmin.app:8000/</a>. The default username/password is homestead/secret.</p>
-
-<p>Laravel&rsquo;s homestead environment is now fully configured and ready for development.</p>
 ]]></content>
   </entry>
   

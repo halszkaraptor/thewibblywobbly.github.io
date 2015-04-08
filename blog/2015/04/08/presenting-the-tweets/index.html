@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Presenting the Tweets - To Boldly Code&#8230;</title>
+  <meta name="author" content="George McDaid">
+
+  
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://boldlycoding.com/blog/2015/04/08/presenting-the-tweets">
+  <link href="/favicon.png" type="image/png" rel="icon">
+  <link href="/atom.xml" rel="alternate" title="To Boldly Code..." type="application/atom+xml">
+
+  <!-- http://opengraphprotocol.org/ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://boldlycoding.com/blog/2015/04/08/presenting-the-tweets">
+  <meta property="og:title" content="Presenting the Tweets - To Boldly Code...">
+  
+
+  <script src="/javascripts/libs/jquery/jquery-2.0.3.min.js"></script>
+
+<link href="http://bootswatch.com/cerulean/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+
+  
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+
+  
+   <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-28443557-2', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+
+
+</head>
+
+  <body   >
+    <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+    <div id="wrap">
+      <header role="banner">
+        <nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">To Boldly Code&#8230;</a>
+        </div>
+
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="active">
+                    <a rel="index" href="/">Blog</a>
+                </li>
+                <li >
+                    <a href="/blog/archives">Archives</a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                
+                    <li>
+                        <form class="search navbar-form navbar-right" action="https://www.google.com/search" method="GET">
+                            <input type="hidden" name="q" value="site:boldlycoding.com">
+                            <div class="form-group">
+                                <input class="form-control" type="text" name="q" placeholder="Search">
+                            </div>
+                        </form>
+                    </li>
+                
+                <li>
+                    <a class="subscribe-rss" href="/atom.xml" title="subscribe via RSS">
+                        <span class="visible-xs">RSS</span>
+                        <img class="hidden-xs" src="/images/rss.png" alt="RSS">
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+      </header>
+      <div id="main" role="main" class="container">
+        <div id="content">
+          <div>
+<article class="hentry" role="article">
+  
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+<time class='entry-date' datetime='2015-04-08T01:06:46-04:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:06 am</span></time>
+        
+      </p>
+    
+    
+    <h1 class="entry-title" itemprop="name headline">
+        Presenting the Tweets
+        
+    </h1>
+    
+  </header>
+
+
+<div class="entry-content clearfix" itemprop="articleBody description"><!-- more -->
+
+
+<p>After setting up the machines, installing the cluster software, configuring the services, writing the tweet collector, collecting the tweets and processing the tweets the time has finally come to present the information. Although the majority of this project has been very interesting, setting up the presentation was personally the most absorbing.</p>
+
+<p>After processing the tweets the data available was the positive, negative, and neutral sentiment by country for a given topic. My largest dataset was the collection of tweets that contained the terms</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ArrayList&lt;String&gt; filter_trends = Lists.newArrayList("university", "school", "uni", "college", "education", "teacher", "teachers", "professor", "professors", "campus");</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Since the tweets come from multiple countries the most appropriate medium for presentation is a map. Although bar and pie charts are appropriate, they become much more cumbersome to read as the number of countries increases. Since there are over 200 countries a map makes much more sense. There were several libraries that support data visualization on a map including Dygraphs, Leaflet, D3.js and Google Charts. Initially Google Charts seemed to be the best choice. It it implemented using HTML and JS and it every easy to use. It also generates what is called a choropleth  or thematic map. This expresses magnitude of data in a particular area. This also is where the problem occurs however. Choropleth maps only express magnitude, not proportion. To accurately represent the opinions in each area it is important that proportion be expressed with magnitude. Proportion cannot be represented on its own because although a particular sentiment may be dominating in an area, this may only be significant depending on the number of tweets. So, the expression of both magnitude and proportion becomes important. Unfortunatly, Google Charts only supports magnitude not proportion. After reviewing the other alternatives the Leaflet library soon emerged as the best candidate.  HumanGeo, an organization that works with big data, social media, and geospatial visualization, has developed a custom variant of Leaflet that caters extremely well to expressing data on a map called the Leaflet Data Visualization Framework or DVF. It supports a large variety of options including bar, radial bar, pie, cox comb, and stacked regular polygon charts. The layers can be stacked in any way desired and adorned with different colouring options and markers. After learning about all these options, Leaflet was committed to as the library to draw the map and express the data.</p>
+
+<p>HumanGeo&rsquo;s Leaflet DVF, like many of the other frameworks, is implemented with HTML and JS. The HTML of the page is very basic, in includes a few DIVs as place holders for the map and legend. The rest is done by the JS.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;!DOCTYPE html&gt;
+</span><span class='line'>&lt;html lang="en"&gt;
+</span><span class='line'>&lt;head&gt;
+</span><span class='line'>    &lt;meta charset="utf-8"&gt;
+</span><span class='line'>  &lt;title&gt;&lt;/title&gt;
+</span><span class='line'>    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+</span><span class='line'>    &lt;meta name="description" content=""&gt;
+</span><span class='line'>    &lt;meta name="author" content=""&gt;
+</span><span class='line'>
+</span><span class='line'>    &lt;link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet"&gt;
+</span><span class='line'>  &lt;link rel="stylesheet" href="lib/bootstrap/css/bootstrap-responsive.css" &gt;
+</span><span class='line'>    &lt;link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" type="text/css" media="screen" /&gt;
+</span><span class='line'>    &lt;link rel="stylesheet" href="dist/css/dvf.css" type="text/css" media="screen" /&gt;
+</span><span class='line'>    &lt;link rel="stylesheet" href="css/example.css" type="text/css" media="screen" /&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;/head&gt;
+</span><span class='line'>
+</span><span class='line'>&lt;body&gt;
+</span><span class='line'>  
+</span><span class='line'>
+</span><span class='line'>    &lt;div class="container-fluid"&gt;
+</span><span class='line'>      &lt;div class="row-fluid"&gt;
+</span><span class='line'>          &lt;div id="map" class="span9"&gt;&lt;/div&gt;
+</span><span class='line'>                        &lt;div id="legend" class="span3"&gt;&lt;/div&gt;
+</span><span class='line'>      &lt;/div&gt;
+</span><span class='line'>  &lt;/div&gt;
+</span><span class='line'>  &lt;script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"&gt;&lt;/script&gt;
+</span><span class='line'>  &lt;script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"&gt;&lt;/script&gt;
+</span><span class='line'>  &lt;script type="text/javascript" src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"&gt;&lt;/script&gt;
+</span><span class='line'>  &lt;script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.2.3"&gt;&lt;/script&gt;
+</span><span class='line'>  &lt;script type="text/javascript" src="lib/jsts/javascript.util.js"&gt;&lt;/script&gt;
+</span><span class='line'>  &lt;script type="text/javascript" src="lib/jsts/jsts.js"&gt;&lt;/script&gt;
+</span><span class='line'>  &lt;script type="text/javascript" src="lib/date.format.js"&gt;&lt;/script&gt;
+</span><span class='line'>  &lt;script type="text/javascript" src="lib/geohash.js"&gt;&lt;/script&gt;
+</span><span class='line'>  &lt;script type="text/javascript" src="dist/leaflet-dvf.min.js"&gt;&lt;/script&gt;
+</span><span class='line'>        
+</span><span class='line'>    &lt;script type="text/javascript"&gt;
+</span><span class='line'>      &lt;!-- Important Stuff Here --&gt;
+</span><span class='line'>  &lt;/script&gt;
+</span><span class='line'>  &lt;script type="text/javascript" src="dist/data/countryData.min.js"&gt;&lt;/script&gt;
+</span><span class='line'>  
+</span><span class='line'>&lt;/body&gt;
+</span><span class='line'>&lt;/html&gt; </span></code></pre></td></tr></table></div></figure>
+
+
+<p>The HTML comment stating &ldquo;Important Stuff Here&rdquo; in a placeholder for what the remainder of this post will discuss. All of the map, data layer and legend generation occurs here. Since this is so significant, it warrants separation from the rest of the code.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+<span class='line-number'>121</span>
+<span class='line-number'>122</span>
+<span class='line-number'>123</span>
+<span class='line-number'>124</span>
+<span class='line-number'>125</span>
+<span class='line-number'>126</span>
+<span class='line-number'>127</span>
+<span class='line-number'>128</span>
+<span class='line-number'>129</span>
+<span class='line-number'>130</span>
+<span class='line-number'>131</span>
+<span class='line-number'>132</span>
+<span class='line-number'>133</span>
+<span class='line-number'>134</span>
+<span class='line-number'>135</span>
+<span class='line-number'>136</span>
+<span class='line-number'>137</span>
+<span class='line-number'>138</span>
+<span class='line-number'>139</span>
+<span class='line-number'>140</span>
+<span class='line-number'>141</span>
+<span class='line-number'>142</span>
+<span class='line-number'>143</span>
+<span class='line-number'>144</span>
+<span class='line-number'>145</span>
+<span class='line-number'>146</span>
+<span class='line-number'>147</span>
+<span class='line-number'>148</span>
+<span class='line-number'>149</span>
+<span class='line-number'>150</span>
+<span class='line-number'>151</span>
+<span class='line-number'>152</span>
+<span class='line-number'>153</span>
+<span class='line-number'>154</span>
+<span class='line-number'>155</span>
+<span class='line-number'>156</span>
+<span class='line-number'>157</span>
+<span class='line-number'>158</span>
+<span class='line-number'>159</span>
+<span class='line-number'>160</span>
+<span class='line-number'>161</span>
+<span class='line-number'>162</span>
+<span class='line-number'>163</span>
+<span class='line-number'>164</span>
+<span class='line-number'>165</span>
+<span class='line-number'>166</span>
+<span class='line-number'>167</span>
+<span class='line-number'>168</span>
+<span class='line-number'>169</span>
+<span class='line-number'>170</span>
+<span class='line-number'>171</span>
+<span class='line-number'>172</span>
+<span class='line-number'>173</span>
+<span class='line-number'>174</span>
+<span class='line-number'>175</span>
+<span class='line-number'>176</span>
+<span class='line-number'>177</span>
+<span class='line-number'>178</span>
+<span class='line-number'>179</span>
+<span class='line-number'>180</span>
+<span class='line-number'>181</span>
+<span class='line-number'>182</span>
+<span class='line-number'>183</span>
+<span class='line-number'>184</span>
+<span class='line-number'>185</span>
+<span class='line-number'>186</span>
+<span class='line-number'>187</span>
+<span class='line-number'>188</span>
+<span class='line-number'>189</span>
+<span class='line-number'>190</span>
+<span class='line-number'>191</span>
+<span class='line-number'>192</span>
+<span class='line-number'>193</span>
+<span class='line-number'>194</span>
+<span class='line-number'>195</span>
+<span class='line-number'>196</span>
+<span class='line-number'>197</span>
+<span class='line-number'>198</span>
+<span class='line-number'>199</span>
+<span class='line-number'>200</span>
+<span class='line-number'>201</span>
+<span class='line-number'>202</span>
+<span class='line-number'>203</span>
+<span class='line-number'>204</span>
+<span class='line-number'>205</span>
+<span class='line-number'>206</span>
+<span class='line-number'>207</span>
+<span class='line-number'>208</span>
+<span class='line-number'>209</span>
+<span class='line-number'>210</span>
+<span class='line-number'>211</span>
+<span class='line-number'>212</span>
+<span class='line-number'>213</span>
+<span class='line-number'>214</span>
+<span class='line-number'>215</span>
+<span class='line-number'>216</span>
+<span class='line-number'>217</span>
+<span class='line-number'>218</span>
+<span class='line-number'>219</span>
+<span class='line-number'>220</span>
+<span class='line-number'>221</span>
+<span class='line-number'>222</span>
+<span class='line-number'>223</span>
+<span class='line-number'>224</span>
+<span class='line-number'>225</span>
+<span class='line-number'>226</span>
+<span class='line-number'>227</span>
+<span class='line-number'>228</span>
+<span class='line-number'>229</span>
+<span class='line-number'>230</span>
+<span class='line-number'>231</span>
+<span class='line-number'>232</span>
+<span class='line-number'>233</span>
+<span class='line-number'>234</span>
+<span class='line-number'>235</span>
+<span class='line-number'>236</span>
+<span class='line-number'>237</span>
+<span class='line-number'>238</span>
+<span class='line-number'>239</span>
+<span class='line-number'>240</span>
+<span class='line-number'>241</span>
+<span class='line-number'>242</span>
+<span class='line-number'>243</span>
+<span class='line-number'>244</span>
+<span class='line-number'>245</span>
+<span class='line-number'>246</span>
+<span class='line-number'>247</span>
+<span class='line-number'>248</span>
+<span class='line-number'>249</span>
+<span class='line-number'>250</span>
+<span class='line-number'>251</span>
+<span class='line-number'>252</span>
+<span class='line-number'>253</span>
+<span class='line-number'>254</span>
+<span class='line-number'>255</span>
+<span class='line-number'>256</span>
+<span class='line-number'>257</span>
+<span class='line-number'>258</span>
+<span class='line-number'>259</span>
+<span class='line-number'>260</span>
+<span class='line-number'>261</span>
+<span class='line-number'>262</span>
+<span class='line-number'>263</span>
+<span class='line-number'>264</span>
+<span class='line-number'>265</span>
+<span class='line-number'>266</span>
+<span class='line-number'>267</span>
+<span class='line-number'>268</span>
+<span class='line-number'>269</span>
+<span class='line-number'>270</span>
+<span class='line-number'>271</span>
+<span class='line-number'>272</span>
+<span class='line-number'>273</span>
+<span class='line-number'>274</span>
+<span class='line-number'>275</span>
+<span class='line-number'>276</span>
+<span class='line-number'>277</span>
+<span class='line-number'>278</span>
+<span class='line-number'>279</span>
+<span class='line-number'>280</span>
+<span class='line-number'>281</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;script type="text/javascript"&gt;
+</span><span class='line'>            
+</span><span class='line'>        &lt;?php
+</span><span class='line'>
+</span><span class='line'>        $sql = 
+</span><span class='line'>        "
+</span><span class='line'>        SELECT `country`, sentiment, total, `code`
+</span><span class='line'>        FROM `sets`
+</span><span class='line'>        JOIN `codes` USING (country)
+</span><span class='line'>        WHERE set_id = ?
+</span><span class='line'>        ORDER BY country ASC
+</span><span class='line'>        ";
+</span><span class='line'>        
+</span><span class='line'>        $stmt-&gt;free_result();
+</span><span class='line'>        $stmt = $conn-&gt;prepare($sql);
+</span><span class='line'>        $stmt-&gt;bind_param("s", $id);
+</span><span class='line'>        $stmt-&gt;execute();
+</span><span class='line'>        
+</span><span class='line'>        $stmt-&gt;bind_result($ccountry, $sent, $tot, $ccode);
+</span><span class='line'>        
+</span><span class='line'>        $country = "";
+</span><span class='line'>        $code = "";
+</span><span class='line'>        $out = 0;
+</span><span class='line'>        $pos = 0;
+</span><span class='line'>        $neg = 0;
+</span><span class='line'>        $neu = 0;
+</span><span class='line'>        ?&gt;
+</span><span class='line'>            
+</span><span class='line'>        var telephoneLines = [
+</span><span class='line'>        
+</span><span class='line'>            &lt;?php
+</span><span class='line'>                while($stmt-&gt;fetch()){
+</span><span class='line'>                    if($country != $ccountry && $country != ""){
+</span><span class='line'>            ?&gt;                      "Total": "&lt;?= $pos+$neg+$neu ?&gt;",
+</span><span class='line'>                                    "CountryCode": "&lt;?= $code ?&gt;",
+</span><span class='line'>                                    "Country": "&lt;?= $country ?&gt;"
+</span><span class='line'>                            },
+</span><span class='line'>            &lt;?php
+</span><span class='line'>                        $out = 0;
+</span><span class='line'>                    }
+</span><span class='line'>
+</span><span class='line'>                    if($out == 0){
+</span><span class='line'>                       ?&gt; { &lt;?php
+</span><span class='line'>                    }
+</span><span class='line'>                    
+</span><span class='line'>                    if($sent == 2){
+</span><span class='line'>                        ?&gt; "Positive": "&lt;?= $tot ?&gt;", &lt;?php
+</span><span class='line'>                        $pos = $tot;
+</span><span class='line'>                    }else if($sent == 1){
+</span><span class='line'>                        ?&gt; "Negative": "&lt;?= $tot ?&gt;", &lt;?php
+</span><span class='line'>                        $neg = $tot;
+</span><span class='line'>                    }else if($sent == 0){
+</span><span class='line'>                        ?&gt; "Neutral": "&lt;?= $tot ?&gt;", &lt;?php
+</span><span class='line'>                        $neu = $tot;
+</span><span class='line'>                    }
+</span><span class='line'>            
+</span><span class='line'>                    $out++;
+</span><span class='line'>                    $country = $ccountry;
+</span><span class='line'>                    $code = $ccode;
+</span><span class='line'>            } ?&gt;
+</span><span class='line'>           
+</span><span class='line'>           &lt;?php 
+</span><span class='line'>           
+</span><span class='line'>           if($out &gt; 0){
+</span><span class='line'>               ?&gt;
+</span><span class='line'>                   "Total": "&lt;?= $pos+$neg+$neu ?&gt;",
+</span><span class='line'>                   "CountryCode": "&lt;?= $code ?&gt;",
+</span><span class='line'>                    "Country": "&lt;?= $country ?&gt;"
+</span><span class='line'>                },
+</span><span class='line'>               &lt;?php
+</span><span class='line'>           }
+</span><span class='line'>           
+</span><span class='line'>          ?&gt;
+</span><span class='line'>           
+</span><span class='line'>        ];  
+</span><span class='line'>                
+</span><span class='line'>         
+</span><span class='line'>        
+</span><span class='line'>        $(document).ready(function() {
+</span><span class='line'>  var map;
+</span><span class='line'>        
+</span><span class='line'>        var baseLayer = new L.StamenTileLayer('toner-lite', {
+</span><span class='line'>      detectRetina: true
+</span><span class='line'>  });
+</span><span class='line'>
+</span><span class='line'>  var baseMaps = {
+</span><span class='line'>      "Stamen Toner": baseLayer
+</span><span class='line'>  };
+</span><span class='line'>
+</span><span class='line'>  var categories = ['Positive','Negative','Neutral'];
+</span><span class='line'>        
+</span><span class='line'>        
+</span><span class='line'>        var red = new L.HSLHueFunction(new L.Point(1, 0), new L.Point(2, 0));
+</span><span class='line'>
+</span><span class='line'>        var green = new L.HSLHueFunction(new L.Point(0, 120), new L.Point(1, 120));
+</span><span class='line'>
+</span><span class='line'>        var blue = new L.HSLHueFunction(new L.Point(2, 240), new L.Point(3, 240));
+</span><span class='line'>        
+</span><span class='line'>        var fillColorFunctionBars = new L.PiecewiseFunction([green, red, blue]);
+</span><span class='line'>        
+</span><span class='line'>  var styleFunction = new L.StylesBuilder(categories,{
+</span><span class='line'>      displayName: function (index) {
+</span><span class='line'>          return categories[index];
+</span><span class='line'>      },
+</span><span class='line'>      color: 'hsl(0,100%,20%)',
+</span><span class='line'>      fillColor: fillColorFunctionBars,
+</span><span class='line'>      minValue: 0,
+</span><span class='line'>      maxValue:50000//300000000
+</span><span class='line'>  });
+</span><span class='line'>
+</span><span class='line'>  options = {
+</span><span class='line'>                recordsField: null,
+</span><span class='line'>      locationMode: L.LocationModes.COUNTRY,
+</span><span class='line'>      codeField: 'CountryCode',
+</span><span class='line'>      chartOptions: styleFunction.getStyles(),
+</span><span class='line'>      layerOptions: {
+</span><span class='line'>          fillOpacity: 0.7,
+</span><span class='line'>          opacity: 1,
+</span><span class='line'>          width: 6,
+</span><span class='line'>                        color: '#000000',
+</span><span class='line'>                        weight: 1,
+</span><span class='line'>                        numberOfSides: 60,
+</span><span class='line'>                        rotation: 45
+</span><span class='line'>      },
+</span><span class='line'>      tooltipOptions: {
+</span><span class='line'>          iconSize: new L.Point(100,65),
+</span><span class='line'>          iconAnchor: new L.Point(-5,65)
+</span><span class='line'>      },
+</span><span class='line'>
+</span><span class='line'>      onEachRecord: function (layer, record) {
+</span><span class='line'>          var $html = $(L.HTMLUtils.buildTable(record));
+</span><span class='line'>
+</span><span class='line'>          layer.bindPopup($html.wrap('&lt;div/&gt;').parent().html(), {
+</span><span class='line'>              maxWidth: 400,
+</span><span class='line'>              minWidth: 400
+</span><span class='line'>          });
+</span><span class='line'>      }
+</span><span class='line'>  };
+</span><span class='line'>
+</span><span class='line'>  //var telephoneLinesBarChart = new L.StackedRegularPolygonDataLayer(telephoneLines, options);
+</span><span class='line'>        var telephoneLinesBarChart = new L.PieChartDataLayer(telephoneLines, options);
+</span><span class='line'>        
+</span><span class='line'>        var nd = new L.HSLLuminosityFunction(new L.Point(-1, .06), new L.Point(1, .07), {outputHue: 75, outputSaturation: '100%'});
+</span><span class='line'>        var red = new L.HSLLuminosityFunction(new L.Point(1, 0.97), new L.Point(1000, 0.4), {outputHue: 305, outputSaturation: '100%'});
+</span><span class='line'>        var yellow = new L.HSLLuminosityFunction(new L.Point(1000, 0.85), new L.Point(100000, 0.3), {outputHue: 71, outputSaturation: '100%'});
+</span><span class='line'>        var blue = new L.HSLLuminosityFunction(new L.Point(100000, 0.85), new L.Point(1500000, 0.3), {outputHue: 200, outputSaturation: '100%'});
+</span><span class='line'>        var colorFunctions = new L.PiecewiseFunction([nd, red, yellow, blue]);
+</span><span class='line'>        
+</span><span class='line'>        var nd = new L.HSLLuminosityFunction(new L.Point(-1, .06), new L.Point(1, .07), {outputHue: 75, outputSaturation: '100%'});
+</span><span class='line'>        var red2 = new L.HSLLuminosityFunction(new L.Point(0, 0.97), new L.Point(1000, 0.4), {outputHue: 305, outputSaturation: '100%'});
+</span><span class='line'>        var yellow2 = new L.HSLLuminosityFunction(new L.Point(1000, 0.85), new L.Point(100000, 0.3), {outputHue: 71, outputSaturation: '100%'});
+</span><span class='line'>        var blue2 = new L.HSLLuminosityFunction(new L.Point(100000, 0.85), new L.Point(2000000, 0.3), {outputHue: 200, outputSaturation: '100%'});
+</span><span class='line'>        var fillColorFunctions = new L.PiecewiseFunction([nd, red, yellow, blue]);
+</span><span class='line'>        
+</span><span class='line'>//        var colorFunction = new L.HSLHueFunction(new L.Point(0,50), new L.Point(2000000,267), {outputSaturation: '100%', outputLuminosity: '30%'});
+</span><span class='line'>//    var fillColorFunction = new L.HSLHueFunction(new L.Point(0,50), new L.Point(2000000,267));
+</span><span class='line'>
+</span><span class='line'>        var l1 = 1000;
+</span><span class='line'>        var l2 = 100000;
+</span><span class='line'>        var l3 = 2000000;
+</span><span class='line'>        
+</span><span class='line'>        var options = {
+</span><span class='line'>      recordsField: null,
+</span><span class='line'>      locationMode: L.LocationModes.COUNTRY,
+</span><span class='line'>      codeField: 'CountryCode',
+</span><span class='line'>                displayOptions: {
+</span><span class='line'>          Total: {
+</span><span class='line'>              displayName: 'Total: 0 to '+l1,
+</span><span class='line'>                                color: red,
+</span><span class='line'>                                fillColor: red2
+</span><span class='line'>          }
+</span><span class='line'>      },
+</span><span class='line'>                includeLayer: function (record) {
+</span><span class='line'>          return record['Total'] &gt;= 0 && record['Total'] &lt; l1; 
+</span><span class='line'>      },
+</span><span class='line'>      layerOptions: {
+</span><span class='line'>          fillOpacity: 0.8,
+</span><span class='line'>          opacity: 1,
+</span><span class='line'>          weight: 1,
+</span><span class='line'>          numberOfSides: 50
+</span><span class='line'>                        
+</span><span class='line'>      },
+</span><span class='line'>      tooltipOptions: {
+</span><span class='line'>          iconSize: new L.Point(80,60),
+</span><span class='line'>          iconAnchor: new L.Point(-5,55)
+</span><span class='line'>      }
+</span><span class='line'>  };
+</span><span class='line'>        
+</span><span class='line'>        tier1 = new L.ChoroplethDataLayer(telephoneLines,options);
+</span><span class='line'>
+</span><span class='line'>        var options = {
+</span><span class='line'>      recordsField: null,
+</span><span class='line'>      locationMode: L.LocationModes.COUNTRY,
+</span><span class='line'>      codeField: 'CountryCode',
+</span><span class='line'>                displayOptions: {
+</span><span class='line'>          Total: {
+</span><span class='line'>              displayName: 'Total: '+l1+ " to "+l2,
+</span><span class='line'>                                color: yellow,
+</span><span class='line'>                                fillColor: yellow2
+</span><span class='line'>          }
+</span><span class='line'>      },
+</span><span class='line'>                includeLayer: function (record) {
+</span><span class='line'>          return record['Total'] &gt;= l1 && record['Total'] &lt; l2; 
+</span><span class='line'>      },
+</span><span class='line'>      layerOptions: {
+</span><span class='line'>          fillOpacity: 0.8,
+</span><span class='line'>          opacity: 1,
+</span><span class='line'>          weight: 1,
+</span><span class='line'>          numberOfSides: 50
+</span><span class='line'>                        
+</span><span class='line'>      },
+</span><span class='line'>      tooltipOptions: {
+</span><span class='line'>          iconSize: new L.Point(100,60),
+</span><span class='line'>          iconAnchor: new L.Point(-5,55)
+</span><span class='line'>      }
+</span><span class='line'>  };
+</span><span class='line'>        
+</span><span class='line'>        tier2 = new L.ChoroplethDataLayer(telephoneLines,options);
+</span><span class='line'>        
+</span><span class='line'>        var options = {
+</span><span class='line'>      recordsField: null,
+</span><span class='line'>      locationMode: L.LocationModes.COUNTRY,
+</span><span class='line'>      codeField: 'CountryCode',
+</span><span class='line'>                displayOptions: {
+</span><span class='line'>          Total: {
+</span><span class='line'>              displayName: 'Total: '+l2+ " to "+l3,
+</span><span class='line'>                                color: blue,
+</span><span class='line'>                                fillColor: blue2
+</span><span class='line'>          }
+</span><span class='line'>      },
+</span><span class='line'>                includeLayer: function (record) {
+</span><span class='line'>          return record['Total'] &gt;= l2 && record['Total'] &lt; l3; 
+</span><span class='line'>      },
+</span><span class='line'>      layerOptions: {
+</span><span class='line'>          fillOpacity: 0.8,
+</span><span class='line'>          opacity: 1,
+</span><span class='line'>          weight: 1,
+</span><span class='line'>          numberOfSides: 50
+</span><span class='line'>                        
+</span><span class='line'>      },
+</span><span class='line'>      tooltipOptions: {
+</span><span class='line'>          iconSize: new L.Point(100,70),
+</span><span class='line'>          iconAnchor: new L.Point(-5,65)
+</span><span class='line'>      }
+</span><span class='line'>  };
+</span><span class='line'>        
+</span><span class='line'>        tier3 = new L.ChoroplethDataLayer(telephoneLines,options);
+</span><span class='line'>        
+</span><span class='line'>  map = L.map('map', {
+</span><span class='line'>      layers: [baseLayer, tier1, tier2, tier3, telephoneLinesBarChart],
+</span><span class='line'>                zoomControl: false
+</span><span class='line'>  }).setView([13, 15], 3);
+</span><span class='line'>        
+</span><span class='line'>        $('#legend').append(tier1.getLegend({
+</span><span class='line'>                numSegments: 10,
+</span><span class='line'>                width: 160,
+</span><span class='line'>                className: 'well'
+</span><span class='line'>        }));
+</span><span class='line'>        
+</span><span class='line'>        $('#legend').append(tier2.getLegend({
+</span><span class='line'>                numSegments: 10,
+</span><span class='line'>                width: 160,
+</span><span class='line'>                className: 'well'
+</span><span class='line'>        }));
+</span><span class='line'>        
+</span><span class='line'>        $('#legend').append(tier3.getLegend({
+</span><span class='line'>                numSegments: 10,
+</span><span class='line'>                width: 160,
+</span><span class='line'>                className: 'well'
+</span><span class='line'>        }));
+</span><span class='line'>        
+</span><span class='line'>        // Disable drag and zoom handlers.
+</span><span class='line'>        map.dragging.disable();
+</span><span class='line'>        map.touchZoom.disable();
+</span><span class='line'>        map.doubleClickZoom.disable();
+</span><span class='line'>        map.scrollWheelZoom.disable();
+</span><span class='line'>
+</span><span class='line'>        // Disable tap handler, if present.
+</span><span class='line'>        if (map.tap) map.tap.disable();
+</span><span class='line'>});
+</span><span class='line'>&lt;/script&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It should first be noted that PHP code exists in the JS code. This allowed my pages to by dynamic and display any dataset imported into a MySQL database. A regular JS array can be placed here, this just prevents the page from being dynamic. The code begins by constructing the array containing the data. After the PHP code runs the array is output in the following format:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[
+</span><span class='line'>  {  
+</span><span class='line'>      "Neutral": "195",  
+</span><span class='line'>      "Negative": "369", 
+</span><span class='line'>      "Positive": "252",                       
+</span><span class='line'>      "Total": "816",
+</span><span class='line'>      "CountryCode": "AFG",
+</span><span class='line'>      "Country": "AFGHANISTAN"
+</span><span class='line'>  },
+</span><span class='line'>  {  
+</span><span class='line'>      "Neutral": "2643",  
+</span><span class='line'>      "Negative": "4788",  
+</span><span class='line'>      "Positive": "1398",                       
+</span><span class='line'>      "Total": "8829",
+</span><span class='line'>      "CountryCode": "ARG",
+</span><span class='line'>      "Country": "ARGENTINA"
+</span><span class='line'>  },
+</span><span class='line'>  
+</span><span class='line'>  ...
+</span><span class='line'>  
+</span><span class='line'>]</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The format I used has the records in the array with no other datasets. The entire array is a single dataset. With the DVF, it is possible to have multiple datasets in the data array. The data layers have a field called recordField, where this can be specified, If the data is the entire array, then null is passed. Moving forward, the code initializes the base map. A toner type map is used to provide high contrast. The DVF also supports watercolour world world maps. Next the code defines the categories for the data being presented which are the three categories of sentiment. After that, a very interesting portion of code is found, these are the colour mapping functions. These map the the scale of values to a colours scale. The scale of possible values if also broken up into tiers since there is a different value depending on the sentiment. This is supported with the piece wise function generator. At different values, different functions are used. This allows very accurate colour selection depending on the value. This function is passed to the style function for the pie chart layer. The style function is then passed to all of the options for the pie char layer. Notable options include the recordField (a null since there is only one dataset in the array), the locationField and codeField describe how countries are expressed in the dataset. Next, there are more colour declaration functions. These functions declare the colours for the countries that the chloropleth layers will colour. These functions are tiered to show the differences in magnitude between the countries since there is a great deal of variation in the total number of tweets from each country. From highest to lowest, they are coloured blue, yellow and then red. These functions of then passed to the appropriate data layer. One data layers is defined for each tier of values so a legend can easily be generated for each scale. Note that again, the recordField is null and the appropriate functions for the value tier are specified in colour and fillColor fields. Also, it is important that a conditional is found in the includeLayer field. This ensure on the data that is to be in that layer is included. After those three layers are defined, they are added to the map. The zoom is disabled to ensure the map stays centred in the view. Then, the scales are added to the legend. Finally, map movement and other zoom options are disabled to further ensure the map is cemented at all times.</p>
+
+<p>When run, the HTML and JS together produce a fantastic visualization that really made the entire project worthwhile. The map with the chloropleth and pie charts can be viewed <a href="http://penguin.lhup.edu/~gmcdaid/uni.php?id=1" title="Fantastic Map Visualization">here</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="glyphicon glyphicon-user"></span> <span class="byline author vcard" itemprop="author" itemscope itemtype="http://schema.org/Person">Posted by <span class="fn" itemprop="name">George McDaid</span></span>
+
+      
+
+
+
+<time class='entry-date' datetime='2015-04-08T01:06:46-04:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:06 am</span></time>
+      
+
+<span class="glyphicon glyphicon-tags"></span>&nbsp;
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/big-data/'>big data</a>, <a class='category' href='/blog/categories/capstone-2015/'>capstone 2015</a>, <a class='category' href='/blog/categories/cloudera/'>cloudera</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://boldlycoding.com/blog/2015/04/08/presenting-the-tweets/" data-via="" data-counturl="http://boldlycoding.com/blog/2015/04/08/presenting-the-tweets/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/03/29/laravel-and-forms/" title="Previous Post: Laravel and Forms">&laquo; Laravel and Forms</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Recent Posts</h3>
+  </div>
+  
+  <div id="recent_posts" class="list-group">
+    
+    <a class="list-group-item active" href="/blog/2015/04/08/presenting-the-tweets/">Presenting the Tweets</a>
+    
+    <a class="list-group-item " href="/blog/2015/03/29/laravel-and-forms/">Laravel and Forms</a>
+    
+    <a class="list-group-item " href="/blog/2015/03/18/limitations-and-problems-with-the-twitter-process/">Limitations and Problems With the Twitter Process</a>
+    
+    <a class="list-group-item " href="/blog/2015/03/17/collecting-and-processing-tweets/">Collecting and Processing Tweets</a>
+    
+    <a class="list-group-item " href="/blog/2015/03/13/laravel-and-advanced-routing-to-controllers/">Laravel and Advanced Routing to Controllers</a>
+    
+  </div>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+        </div>
+      </div>
+    </div>
+    <footer role="contentinfo"><div class="container">
+    <p class="text-muted credits">
+  Copyright &copy; 2015 - George McDaid<br>
+  <small>
+      <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>,
+      <span class="credit">customized with <a href="https://github.com/kAworu/octostrap3">octostrap3</a></span>.
+  </small>
+</p>
+
+</div>
+</footer>
+    
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="/javascripts/modernizr-2.0.js"></script>
+
+
+  </body>
+</html>

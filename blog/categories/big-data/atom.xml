@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Big Data | To Boldly Code...]]></title>
   <link href="http://boldlycoding.com/blog/categories/big-data/atom.xml" rel="self"/>
   <link href="http://boldlycoding.com/"/>
-  <updated>2015-03-18T03:31:54-04:00</updated>
+  <updated>2015-04-08T02:58:05-04:00</updated>
   <id>http://boldlycoding.com/</id>
   <author>
     <name><![CDATA[George McDaid]]></name>
@@ -12,6 +12,391 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Presenting the Tweets]]></title>
+    <link href="http://boldlycoding.com/blog/2015/04/08/presenting-the-tweets/"/>
+    <updated>2015-04-08T01:06:46-04:00</updated>
+    <id>http://boldlycoding.com/blog/2015/04/08/presenting-the-tweets</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<p>After setting up the machines, installing the cluster software, configuring the services, writing the tweet collector, collecting the tweets and processing the tweets the time has finally come to present the information. Although the majority of this project has been very interesting, setting up the presentation was personally the most absorbing.</p>
+
+<p>After processing the tweets the data available was the positive, negative, and neutral sentiment by country for a given topic. My largest dataset was the collection of tweets that contained the terms</p>
+
+<pre><code>ArrayList&lt;String&gt; filter_trends = Lists.newArrayList("university", "school", "uni", "college", "education", "teacher", "teachers", "professor", "professors", "campus");
+</code></pre>
+
+<p>Since the tweets come from multiple countries the most appropriate medium for presentation is a map. Although bar and pie charts are appropriate, they become much more cumbersome to read as the number of countries increases. Since there are over 200 countries a map makes much more sense. There were several libraries that support data visualization on a map including Dygraphs, Leaflet, D3.js and Google Charts. Initially Google Charts seemed to be the best choice. It it implemented using HTML and JS and it every easy to use. It also generates what is called a choropleth  or thematic map. This expresses magnitude of data in a particular area. This also is where the problem occurs however. Choropleth maps only express magnitude, not proportion. To accurately represent the opinions in each area it is important that proportion be expressed with magnitude. Proportion cannot be represented on its own because although a particular sentiment may be dominating in an area, this may only be significant depending on the number of tweets. So, the expression of both magnitude and proportion becomes important. Unfortunatly, Google Charts only supports magnitude not proportion. After reviewing the other alternatives the Leaflet library soon emerged as the best candidate.  HumanGeo, an organization that works with big data, social media, and geospatial visualization, has developed a custom variant of Leaflet that caters extremely well to expressing data on a map called the Leaflet Data Visualization Framework or DVF. It supports a large variety of options including bar, radial bar, pie, cox comb, and stacked regular polygon charts. The layers can be stacked in any way desired and adorned with different colouring options and markers. After learning about all these options, Leaflet was committed to as the library to draw the map and express the data.</p>
+
+<p>HumanGeo&rsquo;s Leaflet DVF, like many of the other frameworks, is implemented with HTML and JS. The HTML of the page is very basic, in includes a few DIVs as place holders for the map and legend. The rest is done by the JS.</p>
+
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt;&lt;/title&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;meta name="description" content=""&gt;
+    &lt;meta name="author" content=""&gt;
+
+    &lt;link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet"&gt;
+    &lt;link rel="stylesheet" href="lib/bootstrap/css/bootstrap-responsive.css" &gt;
+    &lt;link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" type="text/css" media="screen" /&gt;
+    &lt;link rel="stylesheet" href="dist/css/dvf.css" type="text/css" media="screen" /&gt;
+    &lt;link rel="stylesheet" href="css/example.css" type="text/css" media="screen" /&gt;
+
+&lt;/head&gt;
+
+&lt;body&gt;
+
+
+    &lt;div class="container-fluid"&gt;
+        &lt;div class="row-fluid"&gt;
+            &lt;div id="map" class="span9"&gt;&lt;/div&gt;
+                        &lt;div id="legend" class="span3"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.2.3"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="lib/jsts/javascript.util.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="lib/jsts/jsts.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="lib/date.format.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="lib/geohash.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="dist/leaflet-dvf.min.js"&gt;&lt;/script&gt;
+
+    &lt;script type="text/javascript"&gt;
+        &lt;!-- Important Stuff Here --&gt;
+    &lt;/script&gt;
+    &lt;script type="text/javascript" src="dist/data/countryData.min.js"&gt;&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt; 
+</code></pre>
+
+<p>The HTML comment stating &ldquo;Important Stuff Here&rdquo; in a placeholder for what the remainder of this post will discuss. All of the map, data layer and legend generation occurs here. Since this is so significant, it warrants separation from the rest of the code.</p>
+
+<p>&#8220;`</p>
+
+<script type="text/javascript">
+            
+        <?php
+
+        $sql = 
+        "
+        SELECT `country`, sentiment, total, `code`
+        FROM `sets`
+        JOIN `codes` USING (country)
+        WHERE set_id = ?
+        ORDER BY country ASC
+        ";
+        
+        $stmt->free_result();
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $id);
+        $stmt->execute();
+        
+        $stmt->bind_result($ccountry, $sent, $tot, $ccode);
+        
+        $country = "";
+        $code = "";
+        $out = 0;
+        $pos = 0;
+        $neg = 0;
+        $neu = 0;
+        ?>
+            
+        var telephoneLines = [
+        
+            <?php
+                while($stmt->fetch()){
+                    if($country != $ccountry && $country != ""){
+            ?>                      "Total": "<?= $pos+$neg+$neu ?>",
+                                    "CountryCode": "<?= $code ?>",
+                                    "Country": "<?= $country ?>"
+                            },
+            <?php
+                        $out = 0;
+                    }
+
+                    if($out == 0){
+                       ?> { <?php
+                    }
+                    
+                    if($sent == 2){
+                        ?> "Positive": "<?= $tot ?>", <?php
+                        $pos = $tot;
+                    }else if($sent == 1){
+                        ?> "Negative": "<?= $tot ?>", <?php
+                        $neg = $tot;
+                    }else if($sent == 0){
+                        ?> "Neutral": "<?= $tot ?>", <?php
+                        $neu = $tot;
+                    }
+            
+                    $out++;
+                    $country = $ccountry;
+                    $code = $ccode;
+            } ?>
+           
+           <?php 
+           
+           if($out > 0){
+               ?>
+                   "Total": "<?= $pos+$neg+$neu ?>",
+                   "CountryCode": "<?= $code ?>",
+                    "Country": "<?= $country ?>"
+                },
+               <?php
+           }
+           
+          ?>
+           
+        ];  
+                
+         
+        
+        $(document).ready(function() {
+    var map;
+        
+        var baseLayer = new L.StamenTileLayer('toner-lite', {
+        detectRetina: true
+    });
+
+    var baseMaps = {
+        "Stamen Toner": baseLayer
+    };
+
+    var categories = ['Positive','Negative','Neutral'];
+        
+        
+        var red = new L.HSLHueFunction(new L.Point(1, 0), new L.Point(2, 0));
+
+        var green = new L.HSLHueFunction(new L.Point(0, 120), new L.Point(1, 120));
+
+        var blue = new L.HSLHueFunction(new L.Point(2, 240), new L.Point(3, 240));
+        
+        var fillColorFunctionBars = new L.PiecewiseFunction([green, red, blue]);
+        
+    var styleFunction = new L.StylesBuilder(categories,{
+        displayName: function (index) {
+            return categories[index];
+        },
+        color: 'hsl(0,100%,20%)',
+        fillColor: fillColorFunctionBars,
+        minValue: 0,
+        maxValue:50000//300000000
+    });
+
+    options = {
+                recordsField: null,
+        locationMode: L.LocationModes.COUNTRY,
+        codeField: 'CountryCode',
+        chartOptions: styleFunction.getStyles(),
+        layerOptions: {
+            fillOpacity: 0.7,
+            opacity: 1,
+            width: 6,
+                        color: '#000000',
+                        weight: 1,
+                        numberOfSides: 60,
+                        rotation: 45
+        },
+        tooltipOptions: {
+            iconSize: new L.Point(100,65),
+            iconAnchor: new L.Point(-5,65)
+        },
+
+        onEachRecord: function (layer, record) {
+            var $html = $(L.HTMLUtils.buildTable(record));
+
+            layer.bindPopup($html.wrap('<div/>').parent().html(), {
+                maxWidth: 400,
+                minWidth: 400
+            });
+        }
+    };
+
+    //var telephoneLinesBarChart = new L.StackedRegularPolygonDataLayer(telephoneLines, options);
+        var telephoneLinesBarChart = new L.PieChartDataLayer(telephoneLines, options);
+        
+        var nd = new L.HSLLuminosityFunction(new L.Point(-1, .06), new L.Point(1, .07), {outputHue: 75, outputSaturation: '100%'});
+        var red = new L.HSLLuminosityFunction(new L.Point(1, 0.97), new L.Point(1000, 0.4), {outputHue: 305, outputSaturation: '100%'});
+        var yellow = new L.HSLLuminosityFunction(new L.Point(1000, 0.85), new L.Point(100000, 0.3), {outputHue: 71, outputSaturation: '100%'});
+        var blue = new L.HSLLuminosityFunction(new L.Point(100000, 0.85), new L.Point(1500000, 0.3), {outputHue: 200, outputSaturation: '100%'});
+        var colorFunctions = new L.PiecewiseFunction([nd, red, yellow, blue]);
+        
+        var nd = new L.HSLLuminosityFunction(new L.Point(-1, .06), new L.Point(1, .07), {outputHue: 75, outputSaturation: '100%'});
+        var red2 = new L.HSLLuminosityFunction(new L.Point(0, 0.97), new L.Point(1000, 0.4), {outputHue: 305, outputSaturation: '100%'});
+        var yellow2 = new L.HSLLuminosityFunction(new L.Point(1000, 0.85), new L.Point(100000, 0.3), {outputHue: 71, outputSaturation: '100%'});
+        var blue2 = new L.HSLLuminosityFunction(new L.Point(100000, 0.85), new L.Point(2000000, 0.3), {outputHue: 200, outputSaturation: '100%'});
+        var fillColorFunctions = new L.PiecewiseFunction([nd, red, yellow, blue]);
+        
+//        var colorFunction = new L.HSLHueFunction(new L.Point(0,50), new L.Point(2000000,267), {outputSaturation: '100%', outputLuminosity: '30%'});
+//  var fillColorFunction = new L.HSLHueFunction(new L.Point(0,50), new L.Point(2000000,267));
+
+        var l1 = 1000;
+        var l2 = 100000;
+        var l3 = 2000000;
+        
+        var options = {
+        recordsField: null,
+        locationMode: L.LocationModes.COUNTRY,
+        codeField: 'CountryCode',
+                displayOptions: {
+            Total: {
+                displayName: 'Total: 0 to '+l1,
+                                color: red,
+                                fillColor: red2
+            }
+        },
+                includeLayer: function (record) {
+            return record['Total'] >= 0 && record['Total'] < l1; 
+        },
+        layerOptions: {
+            fillOpacity: 0.8,
+            opacity: 1,
+            weight: 1,
+            numberOfSides: 50
+                        
+        },
+        tooltipOptions: {
+            iconSize: new L.Point(80,60),
+            iconAnchor: new L.Point(-5,55)
+        }
+    };
+        
+        tier1 = new L.ChoroplethDataLayer(telephoneLines,options);
+
+        var options = {
+        recordsField: null,
+        locationMode: L.LocationModes.COUNTRY,
+        codeField: 'CountryCode',
+                displayOptions: {
+            Total: {
+                displayName: 'Total: '+l1+ " to "+l2,
+                                color: yellow,
+                                fillColor: yellow2
+            }
+        },
+                includeLayer: function (record) {
+            return record['Total'] >= l1 && record['Total'] < l2; 
+        },
+        layerOptions: {
+            fillOpacity: 0.8,
+            opacity: 1,
+            weight: 1,
+            numberOfSides: 50
+                        
+        },
+        tooltipOptions: {
+            iconSize: new L.Point(100,60),
+            iconAnchor: new L.Point(-5,55)
+        }
+    };
+        
+        tier2 = new L.ChoroplethDataLayer(telephoneLines,options);
+        
+        var options = {
+        recordsField: null,
+        locationMode: L.LocationModes.COUNTRY,
+        codeField: 'CountryCode',
+                displayOptions: {
+            Total: {
+                displayName: 'Total: '+l2+ " to "+l3,
+                                color: blue,
+                                fillColor: blue2
+            }
+        },
+                includeLayer: function (record) {
+            return record['Total'] >= l2 && record['Total'] < l3; 
+        },
+        layerOptions: {
+            fillOpacity: 0.8,
+            opacity: 1,
+            weight: 1,
+            numberOfSides: 50
+                        
+        },
+        tooltipOptions: {
+            iconSize: new L.Point(100,70),
+            iconAnchor: new L.Point(-5,65)
+        }
+    };
+        
+        tier3 = new L.ChoroplethDataLayer(telephoneLines,options);
+        
+    map = L.map('map', {
+        layers: [baseLayer, tier1, tier2, tier3, telephoneLinesBarChart],
+                zoomControl: false
+    }).setView([13, 15], 3);
+        
+        $('#legend').append(tier1.getLegend({
+                numSegments: 10,
+                width: 160,
+                className: 'well'
+        }));
+        
+        $('#legend').append(tier2.getLegend({
+                numSegments: 10,
+                width: 160,
+                className: 'well'
+        }));
+        
+        $('#legend').append(tier3.getLegend({
+                numSegments: 10,
+                width: 160,
+                className: 'well'
+        }));
+        
+        // Disable drag and zoom handlers.
+        map.dragging.disable();
+        map.touchZoom.disable();
+        map.doubleClickZoom.disable();
+        map.scrollWheelZoom.disable();
+
+        // Disable tap handler, if present.
+        if (map.tap) map.tap.disable();
+});
+</script>
+
+
+<pre><code>
+It should first be noted that PHP code exists in the JS code. This allowed my pages to by dynamic and display any dataset imported into a MySQL database. A regular JS array can be placed here, this just prevents the page from being dynamic. The code begins by constructing the array containing the data. After the PHP code runs the array is output in the following format: 
+</code></pre>
+
+<p>[
+    {<br/>
+        &ldquo;Neutral&rdquo;: &ldquo;195&rdquo;,<br/>
+        &ldquo;Negative&rdquo;: &ldquo;369&rdquo;,
+        &ldquo;Positive&rdquo;: &ldquo;252&rdquo;,                     <br/>
+        &ldquo;Total&rdquo;: &ldquo;816&rdquo;,
+        &ldquo;CountryCode&rdquo;: &ldquo;AFG&rdquo;,
+        &ldquo;Country&rdquo;: &ldquo;AFGHANISTAN&rdquo;
+    },
+    {<br/>
+        &ldquo;Neutral&rdquo;: &ldquo;2643&rdquo;,<br/>
+        &ldquo;Negative&rdquo;: &ldquo;4788&rdquo;,<br/>
+        &ldquo;Positive&rdquo;: &ldquo;1398&rdquo;,                     <br/>
+        &ldquo;Total&rdquo;: &ldquo;8829&rdquo;,
+        &ldquo;CountryCode&rdquo;: &ldquo;ARG&rdquo;,
+        &ldquo;Country&rdquo;: &ldquo;ARGENTINA&rdquo;
+    },</p>
+
+<pre><code>...
+</code></pre>
+
+<p>]
+&#8220;`</p>
+
+<p>The format I used has the records in the array with no other datasets. The entire array is a single dataset. With the DVF, it is possible to have multiple datasets in the data array. The data layers have a field called recordField, where this can be specified, If the data is the entire array, then null is passed. Moving forward, the code initializes the base map. A toner type map is used to provide high contrast. The DVF also supports watercolour world world maps. Next the code defines the categories for the data being presented which are the three categories of sentiment. After that, a very interesting portion of code is found, these are the colour mapping functions. These map the the scale of values to a colours scale. The scale of possible values if also broken up into tiers since there is a different value depending on the sentiment. This is supported with the piece wise function generator. At different values, different functions are used. This allows very accurate colour selection depending on the value. This function is passed to the style function for the pie chart layer. The style function is then passed to all of the options for the pie char layer. Notable options include the recordField (a null since there is only one dataset in the array), the locationField and codeField describe how countries are expressed in the dataset. Next, there are more colour declaration functions. These functions declare the colours for the countries that the chloropleth layers will colour. These functions are tiered to show the differences in magnitude between the countries since there is a great deal of variation in the total number of tweets from each country. From highest to lowest, they are coloured blue, yellow and then red. These functions of then passed to the appropriate data layer. One data layers is defined for each tier of values so a legend can easily be generated for each scale. Note that again, the recordField is null and the appropriate functions for the value tier are specified in colour and fillColor fields. Also, it is important that a conditional is found in the includeLayer field. This ensure on the data that is to be in that layer is included. After those three layers are defined, they are added to the map. The zoom is disabled to ensure the map stays centred in the view. Then, the scales are added to the legend. Finally, map movement and other zoom options are disabled to further ensure the map is cemented at all times.</p>
+
+<p>When run, the HTML and JS together produce a fantastic visualization that really made the entire project worthwhile. The map with the chloropleth and pie charts can be viewed <a href="http://penguin.lhup.edu/~gmcdaid/uni.php?id=1" title="Fantastic Map Visualization">here</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Limitations and Problems With the Twitter Process]]></title>
@@ -441,183 +826,6 @@ cat /var/log/mysql/error.log
 <li></li>
 </ol>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Installing, Configuring and Testing Bacula]]></title>
-    <link href="http://boldlycoding.com/blog/2014/12/26/installing-bacula/"/>
-    <updated>2014-12-26T04:07:10-05:00</updated>
-    <id>http://boldlycoding.com/blog/2014/12/26/installing-bacula</id>
-    <content type="html"><![CDATA[<!-- more -->
-
-
-<h2>Installation</h2>
-
-<p>Cloudera Manager and Hadoop installations can be unstable so having backups of the file system becomes very important. Bacula create full, incremental, and differential backups of the filesystem. It support configuration of the backed up directory and exclusions to each backup. Bacula also allows restoration of previously created backups. To create these backups, restore files properly, and maintain other internal information, Bacula requires MySQL to be installed.</p>
-
-<ol>
-<li><p>To begin the install, issue the command:</p>
-
-<pre><code class="`"> sudo apt-get install bacula-server bacula-client
-</code></pre>
-
-<p> To simply the install process, select Yes when asked if dbconfig-common should be used. This requires entering the database administrator password.</p></li>
-<li><p>Create the directories to store Bacula&rsquo;s backup and restoration files</p>
-
-<pre><code class="`"> sudo mkdir -p /bacula/backup /bacula/restore
-</code></pre>
-
-<p> Also, change permission so Bacula create correctly read and write.</p>
-
-<pre><code class="`"> sudo chown -R bacula:bacula /bacula
- sudo chmod -R 700 /bacula
-</code></pre></li>
-<li><p>Now, Bacula must be configured to backup and restore to appropriate locations. To begin, the <em>bacula-dir.conf</em> file must be edited (The next three steps edit this file as well).</p>
-
-<pre><code class="`"> sudo nano /etc/bacula/bacula-dir.conf
-</code></pre>
-
-<p> Within the <em>Job</em> under the comment block beginning <em>Standard Restore Template</em>, change the Where setting. To restore files in their original location it should be set to /. To restore them to the previously created directory, set it to <em>/bacula/restore</em>.</p>
-
-<p> I configured my install to restore to the original locations</p>
-
-<pre><code class="`"> Job {
-   Name = "RestoreFiles"
-   Type = Restore
-   Client=Blank-fd
-   FileSet="Full Set"
-   Storage = File
-   Pool = Default
-   Messages = Standard
-   Where = /
- }
-</code></pre></li>
-<li><p>To conserve disk space, I configured Bacula to use GZIP compression. This is found in the options section of the FileSet listed under the comment <em>List of files to be backed up</em></p>
-
-<pre><code class="`"> Include {
-     Options {
-         signature = MD5
-         compression = GZIP
-     }
- }
-</code></pre></li>
-<li><p>Then set file to / to back up the entire file system. This option is found after the compression option under the next comment block.</p>
-
-<pre><code class="`"> File = /
-</code></pre></li>
-<li><p>Now, configure Bacula to exclude its own file path. This is found in the exclude section, which should be just beyond the file option.</p>
-
-<pre><code class="`"> Exclude {
-     File = /var/lib/bacula
-     File = /bacula
-     File = /proc
-     File = /tmp
-     File = /.journal
-     File = /.fsck
- }
-</code></pre></li>
-<li><p>Next, Bacula must be configured to back up the files described in the Job to the appropriate location. Backup locations are defined in <em>/etc/bacula/bacula-sd.conf</em></p>
-
-<pre><code class="`"> sudo nano /etc/bacula/bacula-sd.conf
-</code></pre>
-
-<p> Under to comment block beginning <em>Devices supported by this Storage daemon</em>, change the Device group to</p>
-
-<pre><code class="`"> Device {
-   Name = FileStorage
-   Media Type = File
-   Archive Device = /bacula/backup
-   LabelMedia = yes;                   # lets Bacula label unlabeled media
-   Random Access = Yes;
-   AutomaticMount = yes;               # when device opened, read it
-   RemovableMedia = no;
-   AlwaysOpen = no;
- }
-</code></pre>
-
-<p> This sets the backup location to the directory created in a previous step.</p></li>
-<li><p>To validate the edited configuration, two command should be issued. If no errors are found, the command will return nothing.</p>
-
-<pre><code class="`"> sudo bacula-dir -tc /etc/bacula/bacula-dir.conf
- sudo bacula-sd -tc /etc/bacula/bacula-sd.conf
-</code></pre></li>
-<li><p>Now, the Bacula services must be restarted to use the new configuration.</p>
-
-<pre><code class="`"> sudo service bacula-sd restart
- sudo service bacula-director restart
-</code></pre></li>
-</ol>
-
-
-<h2>Testing Bacula</h2>
-
-<ol>
-<li><p>Bacula backups and restores are started from Bacula&rsquo;s console, it can be started with</p>
-
-<pre><code class="`"> sudo bconsole
-</code></pre></li>
-<li><p>To label the archive file created by the backup job that will be started in a later step use the command</p>
-
-<pre><code class="`"> label
-</code></pre>
-
-<p> It will prompt for a name, something like Initial_Backup can be entered.</p></li>
-<li><p>Next, the type of storage &ldquo;pool&rdquo;, to store the backup as a <em>File</em>, or archive select option 2 when prompted.</p></li>
-<li><p>To begin the backup operation</p>
-
-<pre><code class="`"> run
-</code></pre>
-
-<p> Select option 1, <em>BackupClient1</em>, to select the Job configured in the previous steps. This selects a full backup operation since this is the first backup made. If this job is done in the future, an incremental backup will be done. This can be reconfigured in the Job settings.</p></li>
-<li><p>To confirm the selections and start the backup type</p>
-
-<pre><code class="`"> yes
-</code></pre>
-
-<p> To view output generated by the job use the command</p>
-
-<pre><code class="`"> messages
-</code></pre>
-
-<p> When the backup has finished, <em>Backup: OK</em> will be displayed. To exit the console type</p>
-
-<pre><code class="`"> exit
-</code></pre></li>
-</ol>
-
-
-<h2>Restoring Files</h2>
-
-<p>When restoring files from a Bacula backup, a full backup must be restored before any incremental backups.</p>
-
-<p>To list all the backup jobs that have been executed use from the Bacula console</p>
-
-<pre><code>list jobs
-</code></pre>
-
-<ol>
-<li><p>To restore all the files automatically type</p>
-
-<pre><code class="`"> restore all
-</code></pre></li>
-<li><p>Then use option 5 to select the most recent backup. All files will be preselected from the most recent backup for restoration since <em>all</em> was used. If all is not specified, files can be selected from the tree for restoration.</p></li>
-<li><p>To finish file selection type</p>
-
-<pre><code class="`"> done
-</code></pre></li>
-<li><p>Like during the backup procedure the following can be typed to view generated output</p>
-
-<pre><code class="`"> messages
-</code></pre></li>
-<li><p>When restoration has been completed type</p>
-
-<pre><code class="`"> exit
-</code></pre></li>
-</ol>
-
-
-<p>This covers a very basic restoration process. Documentation for the restore command exists here, for more advanced needs.</p>
 ]]></content>
   </entry>
   

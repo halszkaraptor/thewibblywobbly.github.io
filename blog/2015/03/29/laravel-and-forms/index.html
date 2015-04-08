@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Laravel and Forms - To Boldly Code&#8230;</title>
+  <meta name="author" content="George McDaid">
+
+  
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://boldlycoding.com/blog/2015/03/29/laravel-and-forms">
+  <link href="/favicon.png" type="image/png" rel="icon">
+  <link href="/atom.xml" rel="alternate" title="To Boldly Code..." type="application/atom+xml">
+
+  <!-- http://opengraphprotocol.org/ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://boldlycoding.com/blog/2015/03/29/laravel-and-forms">
+  <meta property="og:title" content="Laravel and Forms - To Boldly Code...">
+  
+
+  <script src="/javascripts/libs/jquery/jquery-2.0.3.min.js"></script>
+
+<link href="http://bootswatch.com/cerulean/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+
+  
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+
+  
+   <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-28443557-2', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+
+
+</head>
+
+  <body   >
+    <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+    <div id="wrap">
+      <header role="banner">
+        <nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">To Boldly Code&#8230;</a>
+        </div>
+
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="active">
+                    <a rel="index" href="/">Blog</a>
+                </li>
+                <li >
+                    <a href="/blog/archives">Archives</a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                
+                    <li>
+                        <form class="search navbar-form navbar-right" action="https://www.google.com/search" method="GET">
+                            <input type="hidden" name="q" value="site:boldlycoding.com">
+                            <div class="form-group">
+                                <input class="form-control" type="text" name="q" placeholder="Search">
+                            </div>
+                        </form>
+                    </li>
+                
+                <li>
+                    <a class="subscribe-rss" href="/atom.xml" title="subscribe via RSS">
+                        <span class="visible-xs">RSS</span>
+                        <img class="hidden-xs" src="/images/rss.png" alt="RSS">
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+      </header>
+      <div id="main" role="main" class="container">
+        <div id="content">
+          <div>
+<article class="hentry" role="article">
+  
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+<time class='entry-date' datetime='2015-03-29T00:20:38-04:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:20 am</span></time>
+        
+      </p>
+    
+    
+    <h1 class="entry-title" itemprop="name headline">
+        Laravel and Forms
+        
+    </h1>
+    
+  </header>
+
+
+<div class="entry-content clearfix" itemprop="articleBody description"><!-- more -->
+
+
+<p>Laravel supports many HTML form functions and adds a great deal of functionality that makes code more concise and reusable.</p>
+
+<h2>Creating Forms</h2>
+
+<p>The most basic of the form functions is that which creates and closes the form. The URL parameter specifies where the submission should be directed to. By default, forms use the POST HTTP verb. This can be changed to GET or any other valid HTTP verb.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Form::open(array('url' =&gt; route('form')))
+</span><span class='line'>    //
+</span><span class='line'>Form::close() </span></code></pre></td></tr></table></div></figure>
+
+
+<p>Also by default Laravel embeds a CSRF (Cross Site Request Forgery) token in all forms. This token ensures all form submissions are genuine and from the application. The token can be seen with the following command.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>echo Form::token();</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Some of the basic control function that Laravel supports are</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Form::radio('answer_1_radio', '5', false, array('class' =&gt; 'fancy-radio'))
+</span><span class='line'>Form::hidden('date_id', $date)
+</span><span class='line'>Form::label('email', 'E-Mail Address')
+</span><span class='line'>Form::text('username')
+</span><span class='line'>Form::checkbox('name', 'value');</span></code></pre></td></tr></table></div></figure>
+
+
+<p>All of these basic functions have a very similar signature. The radio button specifies a value on selection and also adds a CSS class. Class classes can be added to any of the other fields in the same way. The arry can also contain other HTML values to add like id.</p>
+
+<p>The select function has a signature that is a bit longer than the other functions</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>
+</span><span class='line'>Form::select('answer_16_selection', 
+</span><span class='line'>              array(
+</span><span class='line'>                  '0' =&gt; 'Please select an option',
+</span><span class='line'>                  '1' =&gt; 'Web Site',
+</span><span class='line'>                  '2' =&gt; 'Manager',
+</span><span class='line'>                  '3' =&gt; 'Mail',
+</span><span class='line'>                  '4' =&gt; 'Call',
+</span><span class='line'>                  '5' =&gt; 'E-Mail',
+</span><span class='line'>                  '6' =&gt; 'web Search',
+</span><span class='line'>                  '7' =&gt; 'Co-worker',
+</span><span class='line'>                  '8' =&gt; 'Another Course',
+</span><span class='line'>                  '9' =&gt; 'Other'
+</span><span class='line'>              ),
+</span><span class='line'>              0
+</span><span class='line'>              
+</span><span class='line'>          ) 
+</span><span class='line'>}}</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Form Validation</h2>
+
+<p>Form validation is much more interesting and extensive than form construction. Normally, form validation is placed in the controller associated with a form. The specifics of where to place the validation code and how to route to a form will be discussed in the next section.</p>
+
+<p>For validation begins with definition of the validation rules. Rules are provided to Laravel using an array</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$rules = array(
+</span><span class='line'>                'answer_1_text'        =&gt; 'required',
+</span><span class='line'>                'answer_2_selection'   =&gt; 'required',
+</span><span class='line'>              'password'             =&gt; 'required',
+</span><span class='line'>              'password_confirm'     =&gt; 'required|same:password' 
+</span><span class='line'>              'answer_3_text'        =&gt; 'required|integer|min:5|max:20',
+</span><span class='line'>            );</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Laravel will attempt to generate error messages when validation failes based on the field type and validation requirements. Although these may be sufficient, often more descriptive error messages are desired.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$messages = array(
+</span><span class='line'>                'answer_1_text.required'        =&gt; 'Enter your first name.', 
+</span><span class='line'>                'answer_2_selection.required'   =&gt; 'Please select your title',
+</span><span class='line'>                'password.required'               =&gt; 'Enter a password',
+</span><span class='line'>              'password_confirm.required'     =&gt; 'Please confirm your password'
+</span><span class='line'>                'password_confirm.same'           =&gt; 'The passwords must match',
+</span><span class='line'>                'answer_3_text.min'               =&gt; 'The number must be at least 5',
+</span><span class='line'>                'answer_3_text.max'               =&gt; 'The number must be no more than 20'
+</span><span class='line'>            );</span></code></pre></td></tr></table></div></figure>
+
+
+<p>To pass the rules with the corresponding error messages, the following command is issued</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$validator = Validator::make(Input::all(), $rules, $messages);</span></code></pre></td></tr></table></div></figure>
+
+
+<p>To test the validator for failure an if-statement is used</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>if ($validator-&gt;fails()) {
+</span><span class='line'>  $messages = $validator-&gt;messages();
+</span><span class='line'>  return Redirect::to(route('form'))-&gt;withErrors($validator)-&gt;withInput(Input::all());
+</span><span class='line'>}else{
+</span><span class='line'>  
+</span><span class='line'>  //Necessary processing of valid inputs
+</span><span class='line'>  
+</span><span class='line'>  Session::flash('success', 'Your input has been submitted.');
+</span><span class='line'>  return Redirect::to(route('home')); 
+</span><span class='line'>
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If there are errors, in this case, the messages are fetched from the validator and the user is redirected to the form with the messages passed to the view. If there is not failure, necessary processing is done and the user is redirected to an appropriate destination.</p>
+
+<p>It is also useful to note that more advanced validation can be applied to filed. One useful construct is conditional validation. Conditional is useful when a field, or set of fields, must be validated when another is present or has a particular value. One relevant use case is shipping and billing information. If the user has billing information that is the same as shipping information typically a box is checked and then there is no need to validate the billing information input fields. However, if the check box is not checked, the fields should be validated. This can be accomplished with code similar to the following. This code would be placed directly after the Validator::make call.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$validator-&gt;sometimes(['answer_13_text', 'answer_15_text', 'answer_16_selection', 'answer_17_text'], 'required', function($input)
+</span><span class='line'>  {
+</span><span class='line'>      return empty($input-&gt;sameas);
+</span><span class='line'>  });</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This code will validate fields 13, 15, 16, and 17 only if the sameas input field value (a check box) is not present. The validation rules and messages should be passed into the appropriate array regardless of the result of this function.</p>
+
+<h2>Handling Form Requests</h2>
+
+<p>To begin handling form requests, appropriate routes must be declared. Note that the route where submissions are received uses the POST HTTP verb.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Route::get('/2015_survey', array('as' =&gt; 'survey', 'uses' =&gt; 'ContentController@getSurvey'));
+</span><span class='line'>
+</span><span class='line'>Route::post('/2015_survey', array('as' =&gt; 'submitSurvey', 'uses' =&gt; 'ContentController@postSurvey'));</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next controller actions must be declared. The code within the post handler should be similar to what was discussed in the previous section.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>public function getSurvey(){
+</span><span class='line'>  $view = View::make("2015_survey");
+</span><span class='line'>  return $view;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>public function postSurvey(){
+</span><span class='line'>
+</span><span class='line'>  //Rules
+</span><span class='line'>  //Messages
+</span><span class='line'>  //Make the validator
+</span><span class='line'>  //Any conditional validation
+</span><span class='line'>  //Check validator for failure
+</span><span class='line'>  
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally the view must be declared the view should use the form construction functions discussed in the first section. There are a few more Laravel function that should be noted at this point. In the code from the previous section, when error occur, they are passed to the view to use the errors the following should be done where the errors need to be displayed</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>@if ($errors-&gt;has('answer_6_radio')) &lt;span class="red" style="margin-left: 5px;"&gt;$errors-&gt;first('answer_6_radio')&lt;/span&gt; @endif</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The previous input values are also passed to the view using the code from the previous section to insert these values back into the view</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;textarea name="answer_13_textarea" class="input-off"&gt;Input::old('answer_13_textarea')&lt;/textarea&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The same construct can be used to pass the value to the value field, this would be passed to a Laravel form component function in the value field.</p>
+
+<p>Overall, these features streamline form creation and processing code. Code with an abundance of if statements is eliminated. The Laravel code is also much more reusable. The built in security features also ease the processing of dealing with HTML forms.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="glyphicon glyphicon-user"></span> <span class="byline author vcard" itemprop="author" itemscope itemtype="http://schema.org/Person">Posted by <span class="fn" itemprop="name">George McDaid</span></span>
+
+      
+
+
+
+<time class='entry-date' datetime='2015-03-29T00:20:38-04:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:20 am</span></time>
+      
+
+<span class="glyphicon glyphicon-tags"></span>&nbsp;
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/is-2015/'>is 2015</a>, <a class='category' href='/blog/categories/laravel/'>laravel</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://boldlycoding.com/blog/2015/03/29/laravel-and-forms/" data-via="" data-counturl="http://boldlycoding.com/blog/2015/03/29/laravel-and-forms/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/03/18/limitations-and-problems-with-the-twitter-process/" title="Previous Post: Limitations and Problems With The Twitter Process">&laquo; Limitations and Problems With The Twitter Process</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/04/08/presenting-the-tweets/" title="Next Post: Presenting the Tweets">Presenting the Tweets &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Recent Posts</h3>
+  </div>
+  
+  <div id="recent_posts" class="list-group">
+    
+    <a class="list-group-item " href="/blog/2015/04/08/presenting-the-tweets/">Presenting the Tweets</a>
+    
+    <a class="list-group-item active" href="/blog/2015/03/29/laravel-and-forms/">Laravel and Forms</a>
+    
+    <a class="list-group-item " href="/blog/2015/03/18/limitations-and-problems-with-the-twitter-process/">Limitations and Problems With the Twitter Process</a>
+    
+    <a class="list-group-item " href="/blog/2015/03/17/collecting-and-processing-tweets/">Collecting and Processing Tweets</a>
+    
+    <a class="list-group-item " href="/blog/2015/03/13/laravel-and-advanced-routing-to-controllers/">Laravel and Advanced Routing to Controllers</a>
+    
+  </div>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+        </div>
+      </div>
+    </div>
+    <footer role="contentinfo"><div class="container">
+    <p class="text-muted credits">
+  Copyright &copy; 2015 - George McDaid<br>
+  <small>
+      <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>,
+      <span class="credit">customized with <a href="https://github.com/kAworu/octostrap3">octostrap3</a></span>.
+  </small>
+</p>
+
+</div>
+</footer>
+    
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="/javascripts/modernizr-2.0.js"></script>
+
+
+  </body>
+</html>
