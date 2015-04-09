@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Laravel and PDFs - To Boldly Code&#8230;</title>
+  <meta name="author" content="George McDaid">
+
+  
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://boldlycoding.com/blog/2015/04/08/laravel-and-pdfs">
+  <link href="/favicon.png" type="image/png" rel="icon">
+  <link href="/atom.xml" rel="alternate" title="To Boldly Code..." type="application/atom+xml">
+
+  <!-- http://opengraphprotocol.org/ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://boldlycoding.com/blog/2015/04/08/laravel-and-pdfs">
+  <meta property="og:title" content="Laravel and PDFs - To Boldly Code...">
+  
+
+  <script src="/javascripts/libs/jquery/jquery-2.0.3.min.js"></script>
+
+<link href="http://bootswatch.com/cerulean/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+
+  
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+
+  
+   <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-28443557-2', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+
+
+</head>
+
+  <body   >
+    <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+    <div id="wrap">
+      <header role="banner">
+        <nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">To Boldly Code&#8230;</a>
+        </div>
+
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="active">
+                    <a rel="index" href="/">Blog</a>
+                </li>
+                <li >
+                    <a href="/blog/archives">Archives</a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                
+                    <li>
+                        <form class="search navbar-form navbar-right" action="https://www.google.com/search" method="GET">
+                            <input type="hidden" name="q" value="site:boldlycoding.com">
+                            <div class="form-group">
+                                <input class="form-control" type="text" name="q" placeholder="Search">
+                            </div>
+                        </form>
+                    </li>
+                
+                <li>
+                    <a class="subscribe-rss" href="/atom.xml" title="subscribe via RSS">
+                        <span class="visible-xs">RSS</span>
+                        <img class="hidden-xs" src="/images/rss.png" alt="RSS">
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+      </header>
+      <div id="main" role="main" class="container">
+        <div id="content">
+          <div>
+<article class="hentry" role="article">
+  
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+<time class='entry-date' datetime='2015-04-08T22:01:27-04:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>10:01 pm</span></time>
+        
+      </p>
+    
+    
+    <h1 class="entry-title" itemprop="name headline">
+        Laravel and PDFs
+        
+    </h1>
+    
+  </header>
+
+
+<div class="entry-content clearfix" itemprop="articleBody description"><!-- more -->
+
+
+<p>PDF generation in PHP powered applications tends to be a very turbulent process, and this project was no exception. For this project, PDFs were used to send certificates to users. After taking a course, students are able to download a certificate, as a PDF from the website. Before any of that could be accomplished, a PHP PDF generation library needed to be selected. After a period of research, two choices presented themselves: mPDF and TCPDF. Although both would do what was needed TCDPF was selected because it is being updated more frequently. After that decision was made, the PDF generation could begin.</p>
+
+<h2>Generating the PDFs</h2>
+
+<p>To generate the PDFs, a series of functions calls was needed. All of the functions in the library have extremely long method signatures. To write the generation script the documentation was next to the code and at times arguments were counted. This was a major disadvantage to the framework. With this comes great control over what is generated, so it is not without gain.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>public function getPDF($date = null){
+</span><span class='line'>            $date = Date::where('date_id', '=', $date)-&gt;where('date_end', '&lt;=', DB::raw('NOW()'))-&gt;whereHas(Registration::table(), function($q)
+</span><span class='line'>            {
+</span><span class='line'>                $q-&gt;where('user_id', '=', Auth::user()-&gt;user_id);
+</span><span class='line'>
+</span><span class='line'>            })-&gt;first();
+</span><span class='line'>            
+</span><span class='line'>            if(!$date){
+</span><span class='line'>               Session::flash("error", "You are not authorized to print that certificate");
+</span><span class='line'>               return Redirect::route("myprotech");
+</span><span class='line'>            }
+</span><span class='line'>            
+</span><span class='line'>            $phpdate = strtotime( $date-&gt;date_start );
+</span><span class='line'>            $start = date( 'F j', $phpdate );
+</span><span class='line'>            $phpdate = strtotime( $date-&gt;date_end );
+</span><span class='line'>            $end = date('j, Y', $phpdate);
+</span><span class='line'>            
+</span><span class='line'>            $fulldate = $start." - ".$end;
+</span><span class='line'>            
+</span><span class='line'>            require_once(app_path().'/storage/tcpdf/examples/tcpdf_include.php');
+</span><span class='line'>
+</span><span class='line'>            // create new PDF document
+</span><span class='line'>            $pdf = new TCPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;setPrintHeader(false);
+</span><span class='line'>            $pdf-&gt;setPrintFooter(false);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;AddPage();
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;setJPEGQuality(75);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;SetLineStyle( array( 'width' =&gt; 2, 'color' =&gt; array(0,39,121)));
+</span><span class='line'>
+</span><span class='line'>            $border_style = array('all' =&gt; array('width' =&gt; 2, 'cap' =&gt; 'square', 'join' =&gt; 'miter', 'dash' =&gt; 0, 'phase' =&gt; 0));
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;Rect(6, 6, $pdf-&gt;getPageWidth()-12, $pdf-&gt;getPageHeight()-12, 'D', $border_style);
+</span><span class='line'>            
+</span><span class='line'>            $fontname = $pdf-&gt;addTTFfont(app_path().'/storage/tcpdf/fonts/cert.ttf', '', '', 32);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;SetFont($fontname, '', 72, '', 'false');
+</span><span class='line'>            
+</span><span class='line'>            $border = 0;
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;MultiCell(0, 50, "Certificate of Completion", $border, "C", false, 1, '', '', true, 0, false, true, 50, 'B', false);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;Image(app_path().'/storage/logo.png', 0, 65, 100, 20, 'PNG', '', 'N', false, 300, 'C', false, false);
+</span><span class='line'>            
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;SetFont('helvetica', '', 18);
+</span><span class='line'>            $pdf-&gt;MultiCell(0, 20, "This document certifies", $border, "C", false, 1, '', '', true, 0, false, true, 20, 'B', false);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;SetTextColor(2, 104, 147);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;SetFont('times', 'B', 42);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;MultiCell(0, 30, Auth::user()-&gt;fname." ".Auth::user()-&gt;lname, $border, "C", false, 1, '', '', true, 0, false, true, 30, 'M', false);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;SetFont('helvetica', '', 18);
+</span><span class='line'>            $pdf-&gt;SetTextColor(0, 0, 0);
+</span><span class='line'>            $pdf-&gt;MultiCell(0, 20, "has completed a course of study in", $border, "C", false, 1, '', '', true, 0, false, true, 20, 'M', false);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;SetTextColor(2, 104, 147);
+</span><span class='line'>            $pdf-&gt;MultiCell(0, 20, $date-&gt;course-&gt;title, $border, "C", false, 1, '', '', true, 0, false, true, 20, 'M', false);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;SetTextColor(0, 0, 0);
+</span><span class='line'>            $pdf-&gt;SetFont('helvetica', '', 12);
+</span><span class='line'>            
+</span><span class='line'>            $pdf-&gt;MultiCell(0, 10, $fulldate, $border, "C", false, 1, '', '', true, 0, false, true, 10, 'B', false);
+</span><span class='line'>            
+</span><span class='line'>            // set image scale factor
+</span><span class='line'>            $pdf-&gt;setImageScale(PDF_IMAGE_SCALE_RATIO);
+</span><span class='line'>
+</span><span class='line'>            // set some language-dependent strings (optional)
+</span><span class='line'>            if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+</span><span class='line'>                    require_once(dirname(__FILE__).'/lang/eng.php');
+</span><span class='line'>                    $pdf-&gt;setLanguageArray($l);
+</span><span class='line'>            }
+</span><span class='line'>
+</span><span class='line'>            $pdf =  $pdf-&gt;Output(app_path().'/tcpdf/test.pdf', 'S');
+</span><span class='line'>            return Response::make($pdf, 200, array('content-disposition'=&gt;'attachment;filename='.$date-&gt;date_id.'.pdf'));
+</span><span class='line'>        }</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This was the code needed to generate the PDfs, I will note the most important lines, since the argument calls are so long. If more in depth information is required about anything, please consult <a href="http://www.tcpdf.org/doc/code/classTCPDF.html" title="TCPDF documentation">the documentation</a>. When using the documentation the search function is often useful, followed by the browser find function. It is initially important to note the TCPDF constructor. The default page orientation is portrait. The examples will have a constant in the form PDF_UNIT in its place, the constant is portrait. It landscape is needed, simply replace it with &ldquo;L&rdquo;. All of the constants are found in the file included before using the constructor. After the constructor, it is also important to note the set header and footer lines. These need to be set to false if a header is not desired. The TCPDF default is to include the header. Overall, the generation engine behaves very much like a state machine after an option is set, it must be set again for it to change. This is shown on the line where the line style is set. After this, the line style keeps these settings. That line style is used when the border style is created and then drawn. The rectangle function is used to draw a page border because the line function does not create perfectly meeting lines. Another notable point is there the function addTTFfont. This function adds a font using a TTF file and returns a string corresponding to its name. That name is used to set the font with a size of 72 and the next empty string indicates a regular (not bold or italic) type face. It should be noted the font is set again to ensure the other potions of the PDf render with the desired type face. All of the text is rendered using the multicell function. These are just like table cells. They have a height, width and vertical and horizontal positioning of text within them. The single characters C and M indicate center and vertical middle. Another call uses C and B, center and bottom of the cell. Finally, the last two lines are what is truly important where the framework is concerned. Out of all functions calls attempted to generate the PDF and send it to the user, these seemed to be the most simple and effective. In certain cases, the framework would begin output before the PDF was sent which creates a problem for sending the file. These functions first return the PDF as a string and the framework is used to send the PDF to the user with the content-disposition set as attachment and the filename is also sent. The response is then returned like a view. This entire function call was placed in a constructor. A route was setup to forward certificate requests to this function and everything worked smoothly. Although this post may make things seem a bit simple, the process of writing this code was very tumultuous.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="glyphicon glyphicon-user"></span> <span class="byline author vcard" itemprop="author" itemscope itemtype="http://schema.org/Person">Posted by <span class="fn" itemprop="name">George McDaid</span></span>
+
+      
+
+
+
+<time class='entry-date' datetime='2015-04-08T22:01:27-04:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>10:01 pm</span></time>
+      
+
+<span class="glyphicon glyphicon-tags"></span>&nbsp;
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/is-2015/'>is 2015</a>, <a class='category' href='/blog/categories/laravel/'>laravel</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://boldlycoding.com/blog/2015/04/08/laravel-and-pdfs/" data-via="" data-counturl="http://boldlycoding.com/blog/2015/04/08/laravel-and-pdfs/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/04/08/presenting-the-tweets/" title="Previous Post: Presenting the Tweets">&laquo; Presenting the Tweets</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Recent Posts</h3>
+  </div>
+  
+  <div id="recent_posts" class="list-group">
+    
+    <a class="list-group-item active" href="/blog/2015/04/08/laravel-and-pdfs/">Laravel and PDFs</a>
+    
+    <a class="list-group-item " href="/blog/2015/04/08/presenting-the-tweets/">Presenting the Tweets</a>
+    
+    <a class="list-group-item " href="/blog/2015/03/29/laravel-and-forms/">Laravel and Forms</a>
+    
+    <a class="list-group-item " href="/blog/2015/03/18/limitations-and-problems-with-the-twitter-process/">Limitations and Problems With the Twitter Process</a>
+    
+    <a class="list-group-item " href="/blog/2015/03/17/collecting-and-processing-tweets/">Collecting and Processing Tweets</a>
+    
+  </div>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+        </div>
+      </div>
+    </div>
+    <footer role="contentinfo"><div class="container">
+    <p class="text-muted credits">
+  Copyright &copy; 2015 - George McDaid<br>
+  <small>
+      <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>,
+      <span class="credit">customized with <a href="https://github.com/kAworu/octostrap3">octostrap3</a></span>.
+  </small>
+</p>
+
+</div>
+</footer>
+    
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="/javascripts/modernizr-2.0.js"></script>
+
+
+  </body>
+</html>

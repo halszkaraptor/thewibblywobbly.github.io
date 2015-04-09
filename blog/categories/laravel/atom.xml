@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Laravel | To Boldly Code...]]></title>
   <link href="http://boldlycoding.com/blog/categories/laravel/atom.xml" rel="self"/>
   <link href="http://boldlycoding.com/"/>
-  <updated>2015-04-08T02:58:05-04:00</updated>
+  <updated>2015-04-09T00:00:01-04:00</updated>
   <id>http://boldlycoding.com/</id>
   <author>
     <name><![CDATA[George McDaid]]></name>
@@ -12,6 +12,107 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Laravel and PDFs]]></title>
+    <link href="http://boldlycoding.com/blog/2015/04/08/laravel-and-pdfs/"/>
+    <updated>2015-04-08T22:01:27-04:00</updated>
+    <id>http://boldlycoding.com/blog/2015/04/08/laravel-and-pdfs</id>
+    <content type="html"><![CDATA[<!-- more -->
+
+
+<p>PDF generation in PHP powered applications tends to be a very turbulent process, and this project was no exception. For this project, PDFs were used to send certificates to users. After taking a course, students are able to download a certificate, as a PDF from the website. Before any of that could be accomplished, a PHP PDF generation library needed to be selected. After a period of research, two choices presented themselves: mPDF and TCPDF. Although both would do what was needed TCDPF was selected because it is being updated more frequently. After that decision was made, the PDF generation could begin.</p>
+
+<h2>Generating the PDFs</h2>
+
+<p>To generate the PDFs, a series of functions calls was needed. All of the functions in the library have extremely long method signatures. To write the generation script the documentation was next to the code and at times arguments were counted. This was a major disadvantage to the framework. With this comes great control over what is generated, so it is not without gain.</p>
+
+<pre><code>public function getPDF($date = null){
+            $date = Date::where('date_id', '=', $date)-&gt;where('date_end', '&lt;=', DB::raw('NOW()'))-&gt;whereHas(Registration::table(), function($q)
+            {
+                $q-&gt;where('user_id', '=', Auth::user()-&gt;user_id);
+
+            })-&gt;first();
+
+            if(!$date){
+               Session::flash("error", "You are not authorized to print that certificate");
+               return Redirect::route("myprotech");
+            }
+
+            $phpdate = strtotime( $date-&gt;date_start );
+            $start = date( 'F j', $phpdate );
+            $phpdate = strtotime( $date-&gt;date_end );
+            $end = date('j, Y', $phpdate);
+
+            $fulldate = $start." - ".$end;
+
+            require_once(app_path().'/storage/tcpdf/examples/tcpdf_include.php');
+
+            // create new PDF document
+            $pdf = new TCPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+            $pdf-&gt;setPrintHeader(false);
+            $pdf-&gt;setPrintFooter(false);
+
+            $pdf-&gt;AddPage();
+
+            $pdf-&gt;setJPEGQuality(75);
+
+            $pdf-&gt;SetLineStyle( array( 'width' =&gt; 2, 'color' =&gt; array(0,39,121)));
+
+            $border_style = array('all' =&gt; array('width' =&gt; 2, 'cap' =&gt; 'square', 'join' =&gt; 'miter', 'dash' =&gt; 0, 'phase' =&gt; 0));
+
+            $pdf-&gt;Rect(6, 6, $pdf-&gt;getPageWidth()-12, $pdf-&gt;getPageHeight()-12, 'D', $border_style);
+
+            $fontname = $pdf-&gt;addTTFfont(app_path().'/storage/tcpdf/fonts/cert.ttf', '', '', 32);
+
+            $pdf-&gt;SetFont($fontname, '', 72, '', 'false');
+
+            $border = 0;
+
+            $pdf-&gt;MultiCell(0, 50, "Certificate of Completion", $border, "C", false, 1, '', '', true, 0, false, true, 50, 'B', false);
+
+            $pdf-&gt;Image(app_path().'/storage/logo.png', 0, 65, 100, 20, 'PNG', '', 'N', false, 300, 'C', false, false);
+
+
+            $pdf-&gt;SetFont('helvetica', '', 18);
+            $pdf-&gt;MultiCell(0, 20, "This document certifies", $border, "C", false, 1, '', '', true, 0, false, true, 20, 'B', false);
+
+            $pdf-&gt;SetTextColor(2, 104, 147);
+
+            $pdf-&gt;SetFont('times', 'B', 42);
+
+            $pdf-&gt;MultiCell(0, 30, Auth::user()-&gt;fname." ".Auth::user()-&gt;lname, $border, "C", false, 1, '', '', true, 0, false, true, 30, 'M', false);
+
+            $pdf-&gt;SetFont('helvetica', '', 18);
+            $pdf-&gt;SetTextColor(0, 0, 0);
+            $pdf-&gt;MultiCell(0, 20, "has completed a course of study in", $border, "C", false, 1, '', '', true, 0, false, true, 20, 'M', false);
+
+            $pdf-&gt;SetTextColor(2, 104, 147);
+            $pdf-&gt;MultiCell(0, 20, $date-&gt;course-&gt;title, $border, "C", false, 1, '', '', true, 0, false, true, 20, 'M', false);
+
+            $pdf-&gt;SetTextColor(0, 0, 0);
+            $pdf-&gt;SetFont('helvetica', '', 12);
+
+            $pdf-&gt;MultiCell(0, 10, $fulldate, $border, "C", false, 1, '', '', true, 0, false, true, 10, 'B', false);
+
+            // set image scale factor
+            $pdf-&gt;setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+            // set some language-dependent strings (optional)
+            if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+                    require_once(dirname(__FILE__).'/lang/eng.php');
+                    $pdf-&gt;setLanguageArray($l);
+            }
+
+            $pdf =  $pdf-&gt;Output(app_path().'/tcpdf/test.pdf', 'S');
+            return Response::make($pdf, 200, array('content-disposition'=&gt;'attachment;filename='.$date-&gt;date_id.'.pdf'));
+        }
+</code></pre>
+
+<p>This was the code needed to generate the PDfs, I will note the most important lines, since the argument calls are so long. If more in depth information is required about anything, please consult <a href="http://www.tcpdf.org/doc/code/classTCPDF.html" title="TCPDF documentation">the documentation</a>. When using the documentation the search function is often useful, followed by the browser find function. It is initially important to note the TCPDF constructor. The default page orientation is portrait. The examples will have a constant in the form PDF_UNIT in its place, the constant is portrait. It landscape is needed, simply replace it with &ldquo;L&rdquo;. All of the constants are found in the file included before using the constructor. After the constructor, it is also important to note the set header and footer lines. These need to be set to false if a header is not desired. The TCPDF default is to include the header. Overall, the generation engine behaves very much like a state machine after an option is set, it must be set again for it to change. This is shown on the line where the line style is set. After this, the line style keeps these settings. That line style is used when the border style is created and then drawn. The rectangle function is used to draw a page border because the line function does not create perfectly meeting lines. Another notable point is there the function addTTFfont. This function adds a font using a TTF file and returns a string corresponding to its name. That name is used to set the font with a size of 72 and the next empty string indicates a regular (not bold or italic) type face. It should be noted the font is set again to ensure the other potions of the PDf render with the desired type face. All of the text is rendered using the multicell function. These are just like table cells. They have a height, width and vertical and horizontal positioning of text within them. The single characters C and M indicate center and vertical middle. Another call uses C and B, center and bottom of the cell. Finally, the last two lines are what is truly important where the framework is concerned. Out of all functions calls attempted to generate the PDF and send it to the user, these seemed to be the most simple and effective. In certain cases, the framework would begin output before the PDF was sent which creates a problem for sending the file. These functions first return the PDF as a string and the framework is used to send the PDF to the user with the content-disposition set as attachment and the filename is also sent. The response is then returned like a view. This entire function call was placed in a constructor. A route was setup to forward certificate requests to this function and everything worked smoothly. Although this post may make things seem a bit simple, the process of writing this code was very tumultuous.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Laravel and Forms]]></title>
@@ -525,135 +626,6 @@ Blade::extend(function($view, $compiler)
 <p>});
 &#8220;`
 {% endraw %}</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Laravel and the Database]]></title>
-    <link href="http://boldlycoding.com/blog/2015/02/10/laravel-and-the-database/"/>
-    <updated>2015-02-10T23:13:31-05:00</updated>
-    <id>http://boldlycoding.com/blog/2015/02/10/laravel-and-the-database</id>
-    <content type="html"><![CDATA[<!-- more -->
-
-
-<p>Even before web development, Laravel begins bringing improvements to database operations. To improve development, Laravel provides a query builder, the Eloquent ORM, Migrations and Seeding. Although all these tools may not cater perfectly to every scenario encountered, the benefits tend to outweigh costs encountered.</p>
-
-<h2>The Database Configuration</h2>
-
-<p>Before any specific features are discussed, it is useful to be aware of Laravel&rsquo;s database configuration. The database configuration file is location in app/config/database.php. Here the default database can be selected and other database conncetions can be specified. Laravel supports connection with MySQL, Postgres, SQLite, and SQL Server. This file also set that table where Laravel will store its migrations. All database configuration options should be placed in this file.</p>
-
-<h2>Laravel&rsquo;s Query Builder</h2>
-
-<p>Laravel&rsquo;s query builder tends to be as powerful as raw SQL. It also protects against SQL injection so string cleaning is not necessary. Another benefit of the query builder is the simplicity and cleanliness of the code. A select statement can be done with the following line</p>
-
-<pre><code>```
-$users = DB::table('users')-&gt;get();
-```
-</code></pre>
-
-<p>There is no need to specify a SQL string or have another call to run the query. The total number of characters is also reduced compared to the typical PHP/SQL implementation. All of the attributes are then accessed in the following fashion. This too is as simple as the select statement.</p>
-
-<pre><code>```
-foreach ($users as $user)
-{
-    var_dump($user-&gt;name);
-}
-```
-</code></pre>
-
-<p>A more advanced query may look like the follwing. It retains the simplicity of the former operations as well as the power of raw PHP/SQL.</p>
-
-<pre><code>```
-$users = DB::table('users')
-                -&gt;orderBy('name', 'desc')
-                -&gt;groupBy('count')
-                -&gt;having('count', '&gt;', 100)
-                -&gt;get();
-```
-</code></pre>
-
-<p>The query builder also supports all of the other normal SQL functions, but all those will not be described here. One point where the query builder becomes somewhat more cumbersome than SQL is when an advanced where clause is needed. When such a clause is required, a closure must be used. A Laravel closure is an anonymous function used within another construct. The following shows an advanced where with a closure</p>
-
-<pre><code>```
-DB::table('users')
-        -&gt;where('name', '=', 'John')
-        -&gt;orWhere(function($query)
-        {
-            $query-&gt;where('votes', '&gt;', 100)
-                  -&gt;where('title', '&lt;&gt;', 'Admin');
-        })
-        -&gt;get();
-```
-</code></pre>
-
-<p>Overall, the query builder is much more organized than using raw PHP/SQL. Since everything is also implemented using OO concepts, mistakes are much less common. Operations will only be supported if they are valid for the current object in use. However, this the most basic way to interact with a database under the Laravel framework. The Eloquent ORM is much more advanced and provide more capabilities.</p>
-
-<h2>Eloquent ORM</h2>
-
-<p>Eloquent ORM is Laravel&rsquo;s implementation of an Active Record system. All tables in the database are tied to Models, so all table can be interacted with as objects. All models should be housed in the app/models directory. A basic sample model would look like the following</p>
-
-<pre><code>```
-class Vendor extends Model {
-
-    protected $table = 'Vendor';
-
-    public function product()
-    {   
-        return $this-&gt;hasMany('Product', 'product_id');
-    }
-
-}       
-```
-</code></pre>
-
-<p>This is a basic model for Vendors and the relationship with Products is implemented with the hasMany function.</p>
-
-<p>Then to interact with the model, this statement could be used</p>
-
-<pre><code>```
-$vendors = Vendor::all();
-```
-</code></pre>
-
-<p>This returns all of the users in the form of objects. The attributes are retrieved in the same was as with the query builder. Although it retains the organization of the query builder, Eloquent ORM does not cater well to complex queries. I found myself frequently using elements of the basic query builder. Eloquent makes up for this with its relationship evaluation. Referencing the previous example, after getting the vendors, the products can be iterated over without any other queries. In Laravel this is called a dynamic property and is a huge advantage of the framework.</p>
-
-<h2>Migrations</h2>
-
-<p>One of the most useful database tools offered by Laravel is the migration. Laravel migration are version control for the database. When a change must be made to the database, a new migration is created. All migration have an up and down method that are run for migrate and rollback respectively. After editing the migration, all migration can be run with</p>
-
-<pre><code>```
-php artisan migrate
-```
-</code></pre>
-
-<p>This is like pushing a series of commits with git.</p>
-
-<p>To roll back run</p>
-
-<pre><code>```
-php artisan migrate:rollback
-```
-</code></pre>
-
-<p>Migrations can be used to create the database and keep track of call changes that occur over the lifetime of a project. If a problem is encountered a roll back can be issued and another can be created to remedy the problem.</p>
-
-<h2>Seeding</h2>
-
-<p>Seeding is another useful feature Laravel provides although not extremely innovative. Seeding can be accomplished with a simple PHP script. Laravel does not provide any truly innovative or extremely capability. It is however useful for organization purposes to have to migrations and seeding script location in one place. it avoids the problem of dispersing scripts and functions across a webserver which happens with many projects. A typical migration consists of the following</p>
-
-<pre><code>```
-class UserTableSeeder extends Seeder {
-
-    public function run()
-    {
-        DB::table('users')-&gt;delete();
-
-        User::create(array('email' =&gt; 'foo@bar.com'));
-    }
-
-}
-```
-</code></pre>
 ]]></content>
   </entry>
   
